@@ -175,3 +175,7 @@ cython_debug/
 
 # Any custom Python virtual environment
 *_venv/
+
+# LateX files
+*.aux
+*.pdf
