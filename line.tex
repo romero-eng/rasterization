@@ -1,0 +1,16 @@
+\documentclass{article}
+\usepackage{amsmath}
+\DeclareMathOperator{\sgn}{sgn}
+\begin{document}
+
+\begin{enumerate}
+    \item \begin{align*}
+                &x[n + 1] = x[n] + 1 \\ \\ 
+                &y[n + 1] = \begin{cases}
+                                y[n] \quad \quad \quad \quad \quad, \quad y\big(x[n + 1]\big) - y[n] < 0.5 \\ \\
+                                y[n] + \sgn\big(\Delta y\big), \quad y\big(x[n + 1]\big) - y[n] \geq 0.5 
+                              \end{cases} 
+            \end{align*}
+\end{enumerate}
+
+\end{document}
