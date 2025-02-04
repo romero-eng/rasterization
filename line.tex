@@ -10,18 +10,87 @@
 \caption{Line Rasterization Algorithm \label{overflow}}
 \end{figure}
 
+\underline{\textbf{Rasterization Algorithm:}} \\
 \begin{enumerate}
-    \item \text{Set Initial and Final values}
+    \item \underline{Set Initial and Final values:}
            \begin{align*}
                 x[0] = x_{1}, x[N] = x_{2} \\ \\
-                y[0] = y_{1}, y[N] = y_{2} \\ \\ 
+                y[0] = y_{1}, y[N] = y_{2}
+             \end{align*}
+           \begin{align*}     
+                \Delta x = x_{2} - x_{1} = x[N] - x[0] \\ \\
+                \Delta y = y_{2} - y_{1} = y[N] - y[0] 
              \end{align*}
     \item \text{\underline{for $n = 0 \rightarrow N - 2$:}} 
            \begin{align*}
-                &x[n + 1] = x[n] + 1 \\ \\ 
+                &x[n + 1] = x[n] + \sgn\big(\Delta x\big) \\ \\ 
                 &y[n + 1] = \begin{cases}
-                                y[n] \quad \quad \quad \quad \quad, \quad y\big(x[n + 1]\big) - y[n] < 0.5 \\ \\
-                                y[n] + \sgn\big(\Delta y\big), \quad y\big(x[n + 1]\big) - y[n] \geq 0.5 
+                                y[n] \quad \quad \quad \quad \quad, \quad \sgn\big(\Delta y\big)\Big(y\big(x[n + 1]\big) - y[n]\Big) < 0.5 \\ \\
+                                y[n] + \sgn\big(\Delta y\big), \quad \sgn\big(\Delta y\big)\Big(y\big(x[n + 1]\big) - y[n]\Big) \geq 0.5 
+                              \end{cases} 
+            \end{align*}
+\end{enumerate}
+
+\underline{\textbf{Optimization:}}
+\begin{align*}
+    y = mx + b &\Rightarrow y = \bigg(\frac{\Delta y}{\Delta x}\bigg)x + b \\
+               &\Rightarrow y_{1} = \bigg(\frac{\Delta y}{\Delta x}\bigg)x_{1} + b \\
+               &\Rightarrow b = y_{1} - \bigg(\frac{\Delta y}{\Delta x}\bigg) \\
+               &\Rightarrow y = \bigg(\frac{\Delta y}{\Delta x}\bigg)x + y_{1} - \bigg(\frac{\Delta y}{\Delta x}\bigg)x_{1} \\
+               &\Rightarrow y = \bigg(\frac{\Delta y}{\Delta x}\bigg)\big(x - x_{1}\big) + y_{1} \\
+               &\Rightarrow y(x) = \bigg(\frac{\Delta y}{\Delta x}\bigg)\Big(x - x[0]\Big) + y[0] \\
+               &\Rightarrow y\Big(x[n]\Big) = \bigg(\frac{\Delta y}{\Delta x}\bigg)\Big(x[n] - x[0]\Big) + y[0] \\
+               &\Rightarrow y\Big(x[n]\Big) = \bigg(\frac{\Delta y}{\Delta x}\bigg)\Delta x[n] + y[0] \\
+               &\Rightarrow y\Big(x[n]\Big) = \Delta y\bigg(\frac{\Delta x[n]}{\Delta x}\bigg) + y[0]
+\end{align*}
+\begin{align*}
+    \Rightarrow \Delta x[n] &\equiv x[n] - x[0] \\
+                            &= x[n - 1] + \sgn\big(\Delta x\big) - x[0] \\
+                            &= x[n - 2] + 2\sgn\big(\Delta x\big) - x[0] \\
+                            & \quad \quad \quad \vdots \\
+                            &= x[0] + n\sgn\big(\Delta x\big) - x[0] \\
+                            &= n\sgn\big(\Delta x\big)
+\end{align*}
+
+\begin{equation*}
+    \Rightarrow \Delta x = x[N] - x[0] = N\sgn\big(\Delta x\big)
+\end{equation*}
+
+\begin{equation*}
+    \Rightarrow \frac{\Delta x[n]}{\Delta x} = \frac{n\sgn\big(\Delta x\big)}{N\sgn\big(\Delta x\big)} = \frac{n}{N}
+\end{equation*}
+
+\begin{align*}
+    &\Rightarrow y\Big(x[n]\Big) = \Delta y\bigg(\frac{\Delta x[n]}{\Delta x}\bigg) + y[0] \\
+    & \quad \quad \quad \quad \quad = \Delta y\bigg(\frac{n}{N}\bigg) + y[0] \\
+    &\Rightarrow y\Big(x[n + 1]\Big) = \Delta y\bigg(\frac{n + 1}{N}\bigg) + y[0]
+\end{align*}
+
+\begin{align*}
+    &\quad \quad \sgn\big(\Delta y\big)\Big(y\big(x[n + 1]\big) - y[n]\Big) \geq 0.5 \\
+    &\Rightarrow \sgn\big(\Delta y\big)\Bigg(\Delta y\bigg(\frac{n + 1}{N}\bigg) + y[0] - y[n]\Bigg) \geq 0.5 \\
+    &\Rightarrow \sgn\big(\Delta y\big)\Bigg(\Delta y\bigg(\frac{n + 1}{N}\bigg) - \Delta y[n]\Bigg) \geq 0.5 \quad, \quad \Delta y[n] \equiv y[n] - y[0] \\ 
+    &\Rightarrow 2\sgn\big(\Delta y\big)\Bigg(\big(n + 1\big)\Delta y - N\Delta y[n]\Bigg) \geq N \\
+\end{align*}
+
+\underline{\textbf{Rasterization Algorithm:}} \\
+\begin{enumerate}
+    \item \underline{Set Initial and Final values:}
+           \begin{align*}
+                x[0] = x_{1}, x[N] = x_{2} \\ \\
+                y[0] = y_{1}, y[N] = y_{2}
+             \end{align*}
+           \begin{align*}     
+                \Delta x = x_{2} - x_{1} = x[N] - x[0] \\ \\
+                \Delta y = y_{2} - y_{1} = y[N] - y[0] 
+             \end{align*}
+    \item \text{\underline{for $n = 0 \rightarrow N - 2$:}} 
+           \begin{align*}
+                &\Delta y[n] \equiv y[n] - y[0] \\ \\ 
+                &x[n + 1] = x[n] + \sgn\big(\Delta x\big) \\ \\ 
+                &y[n + 1] = \begin{cases}
+                                y[n] \quad \quad \quad \quad \quad, \quad 2\sgn\big(\Delta y\big)\Bigg(\big(n + 1\big)\Delta y - N\Delta y[n]\Bigg) < N \\ \\
+                                y[n] + \sgn\big(\Delta y\big), \quad 2\sgn\big(\Delta y\big)\Bigg(\big(n + 1\big)\Delta y - N\Delta y[n]\Bigg) \geq N 
                               \end{cases} 
             \end{align*}
 \end{enumerate}
