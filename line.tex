@@ -71,26 +71,34 @@
     &\Rightarrow \sgn\big(\Delta y\big)\Bigg(\Delta y\bigg(\frac{n + 1}{N}\bigg) + y[0] - y[n]\Bigg) \geq 0.5 \\
     &\Rightarrow \sgn\big(\Delta y\big)\Bigg(\Delta y\bigg(\frac{n + 1}{N}\bigg) - \Delta y[n]\Bigg) \geq 0.5 \quad, \quad \Delta y[n] \equiv y[n] - y[0] \\ 
     &\Rightarrow 2\sgn\big(\Delta y\big)\Bigg(\big(n + 1\big)\Delta y - N\Delta y[n]\Bigg) \geq N \\
+    &\Rightarrow 2\sgn\big(\Delta y\big)\Bigg(n\Delta y - Ny[n] \Bigg) \geq \tau, \quad \tau \equiv N - 2\sgn\big(\Delta y\big)\bigg(\big(N - 1\big)y_{1} + y_{2}\bigg) \\
+\end{align*}
+
+\underline{\textbf{Number of elements:}}
+\begin{align*}
+    &\Delta x = N\sgn\big(\Delta x\big) \\ \\
+    &\Rightarrow |\Delta x| = N \\ \\
+    &\Rightarrow N = |\Delta x| 
 \end{align*}
 
 \underline{\textbf{Rasterization Algorithm:}} \\
 \begin{enumerate}
     \item \underline{Set Initial and Final values:}
            \begin{align*}
-                x[0] = x_{1}, x[N] = x_{2} \\ \\
-                y[0] = y_{1}, y[N] = y_{2}
-             \end{align*}
-           \begin{align*}     
-                \Delta x = x_{2} - x_{1} = x[N] - x[0] \\ \\
-                \Delta y = y_{2} - y_{1} = y[N] - y[0] 
+                &\Delta x = x_{2} - x_{1} \\ \\
+                &\Delta y = y_{2} - y_{1} \\ \\
+                &N = |\Delta x| \\ \\  
+                &x[0] = x_{1}, x[N] = x_{2} \\ \\
+                &y[0] = y_{1}, y[N] = y_{2} \\ \\ 
+                &\tau = N - 2\sgn\big(\Delta y\big)\bigg(\big(N - 1\big)y_{1} + y_{2}\bigg) \\ 
              \end{align*}
     \item \text{\underline{for $n = 0 \rightarrow N - 2$:}} 
            \begin{align*}
-                &\Delta y[n] \equiv y[n] - y[0] \\ \\ 
                 &x[n + 1] = x[n] + \sgn\big(\Delta x\big) \\ \\ 
+                &\Delta y[n] = y[n] - y[0] \\ \\  
                 &y[n + 1] = \begin{cases}
-                                y[n] \quad \quad \quad \quad \quad, \quad 2\sgn\big(\Delta y\big)\Bigg(\big(n + 1\big)\Delta y - N\Delta y[n]\Bigg) < N \\ \\
-                                y[n] + \sgn\big(\Delta y\big), \quad 2\sgn\big(\Delta y\big)\Bigg(\big(n + 1\big)\Delta y - N\Delta y[n]\Bigg) \geq N 
+                                y[n] \quad \quad \quad \quad \quad, \quad 2\sgn\big(\Delta y\big)\Bigg(n\Delta y - Ny[n] \Bigg) < \tau \\
+                                y[n] + \sgn\big(\Delta y\big), \quad 2\sgn\big(\Delta y\big)\Bigg(n\Delta y - Ny[n] \Bigg) \geq \tau
                               \end{cases} 
             \end{align*}
 \end{enumerate}
