@@ -14,8 +14,8 @@
 \begin{enumerate}
     \item \underline{Set Initial and Final values:}
            \begin{align*}
-                x[0] = x_{1}, x[N] = x_{2} \\ \\
-                y[0] = y_{1}, y[N] = y_{2}
+                x[0] = x_{0}, x[N] = x_{2} \\ \\
+                y[0] = y_{0}, y[N] = y_{2}
              \end{align*}
            \begin{align*}     
                 \Delta x = x_{2} - x_{1} = x[N] - x[0] \\ \\
@@ -95,12 +95,45 @@
     \item \text{\underline{for $n = 0 \rightarrow N - 2$:}} 
            \begin{align*}
                 &x[n + 1] = x[n] + \sgn\big(\Delta x\big) \\ \\ 
-                &\Delta y[n] = y[n] - y[0] \\ \\  
                 &y[n + 1] = \begin{cases}
                                 y[n] \quad \quad \quad \quad \quad, \quad 2\sgn\big(\Delta y\big)\Bigg(n\Delta y - Ny[n] \Bigg) < \tau \\
                                 y[n] + \sgn\big(\Delta y\big), \quad 2\sgn\big(\Delta y\big)\Bigg(n\Delta y - Ny[n] \Bigg) \geq \tau
-                              \end{cases} 
+                              \end{cases} \\ \\ 
             \end{align*}
 \end{enumerate}
+
+\underline{\textbf{Final Generalization:}}
+\begin{align*}
+    &\Delta x = x_{2} - x_{1} \\ \\
+    &\Delta y = y_{2} - y_{1} \\ \\
+    &N = \begin{cases}
+            |\Delta x|, \quad |\Delta x| > |\Delta y| \\ \\
+            |\Delta y|, \quad |\Delta y| < |\Delta y|
+           \end{cases} \\ \\  
+    &\tau = N - 2d, \quad d \equiv \begin{cases}
+                                        \sgn\big(\Delta y\big)\bigg(\big(N - 1\big)y_{1} + y_{2}\bigg), \quad |\Delta x| > |\Delta y| \\  
+                                        \sgn\big(\Delta x\big)\bigg(\big(N - 1\big)x_{1} + x_{2}\bigg), \quad |\Delta x| < |\Delta y| 
+                                     \end{cases} \\ \\
+    &x[0] = x_{1}, x[N] = x_{2} \\ \\
+    &y[0] = y_{1}, y[N] = y_{2} \\ \\
+\end{align*}
+
+\underline{If $|\Delta x| > |\Delta y|$:}
+\begin{align*}
+    &x[n + 1] = x[n] + \sgn\big(\Delta x\big) \\ \\ 
+    &y[n + 1] = \begin{cases}
+                    y[n] \quad \quad \quad \quad \quad, \quad 2\sgn\big(\Delta y\big)\Bigg(n\Delta y - Ny[n] \Bigg) < \tau \\
+                    y[n] + \sgn\big(\Delta y\big), \quad 2\sgn\big(\Delta y\big)\Bigg(n\Delta y - Ny[n] \Bigg) \geq \tau
+                  \end{cases} \\ \\ 
+\end{align*}
+\underline{else}
+\begin{align*}
+    &y[n + 1] = y[n] + \sgn\big(\Delta y\big) \\ \\ 
+    &x[n + 1] = \begin{cases}
+                    x[n] \quad \quad \quad \quad \quad, \quad 2\sgn\big(\Delta y\big)\Bigg(n\Delta x - Nx[n] \Bigg) < \tau \\
+                    x[n] + \sgn\big(\Delta x\big), \quad 2\sgn\big(\Delta x\big)\Bigg(n\Delta x - Nx[n] \Bigg) \geq \tau
+                  \end{cases} \\ \\ 
+\end{align*}
+
 
 \end{document}
