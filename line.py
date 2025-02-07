@@ -24,6 +24,8 @@ def line(x_1: int, y_1: int,
 
     N: int = abs(delta_x if non_steep else delta_y)
     T: int = N - 2*(sgn_delta_y*((N - 1)*y_1 + y_2) if non_steep else sgn_delta_x*((N - 1)*x_1 + x_2))
+    sgn_delta_o: int = sgn_delta_y if non_steep else sgn_delta_x
+    delta_o: int = delta_y if non_steep else delta_x
 
     points: np.ndarray[tuple[int, int], np.dtype[Any]] = np.empty((N + 1, 2), dtype=int)
     points[0] = (x_1, y_1)
@@ -33,7 +35,7 @@ def line(x_1: int, y_1: int,
 
     for n in range(0, N - 1):
 
-        decision = 2*(sgn_delta_y*(n*delta_y - N*points[n][1]) if non_steep else sgn_delta_x*(n*delta_x - N*points[n][0])) >= T  # noqa: E501
+        decision = 2*sgn_delta_o*(n*delta_o - N*points[n][1 if non_steep else 0]) >= T
 
         points[n + 1] = \
             (points[n][0] + sgn_delta_x*(1 if     non_steep or decision else 0),
