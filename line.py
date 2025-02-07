@@ -36,8 +36,8 @@ def line(x_1: int, y_1: int,
         decision = 2*(sgn_delta_y*(n*delta_y - N*points[n][1]) if non_steep else sgn_delta_x*(n*delta_x - N*points[n][0])) >= T  # noqa: E501
 
         points[n + 1] = \
-            (points[n][0] + (sgn_delta_x if non_steep else (sgn_delta_x if decision else 0)),
-             points[n][1] + ((sgn_delta_y if decision else 0) if non_steep else sgn_delta_y))
+            (points[n][0] + sgn_delta_x*(1 if non_steep else (1 if decision else 0)),
+             points[n][1] + sgn_delta_y*((1 if decision else 0) if non_steep else 1))
 
     return points
 
