@@ -115,25 +115,32 @@
                                         \sgn\big(\Delta x\big)\bigg(\big(N - 1\big)x_{1} + x_{2}\bigg), \quad |\Delta x| < |\Delta y| 
                                      \end{cases} \\ \\
     &x[0] = x_{1}, x[N] = x_{2} \\ \\
-    &y[0] = y_{1}, y[N] = y_{2} \\ \\
-\end{align*}
+    &y[0] = y_{1}, y[N] = y_{2} \\ \\ 
+    &\Delta O \equiv \begin{cases}
+                        \Delta y, \quad |\Delta x| > |\Delta y| \\
+                        \Delta x, \quad |\Delta x| < |\Delta y| 
+                       \end{cases} \ , \quad
+     \Delta I \equiv \begin{cases}
+                        \Delta x, \quad |\Delta x| > |\Delta y| \\
+                        \Delta y, \quad |\Delta x| < |\Delta y| 
+                       \end{cases}  \\ \\
+    &O[n] = \begin{cases}
+                y[n], \quad |\Delta x| > |\Delta y| \\
+                x[n], \quad |\Delta x| < |\Delta y|
+              \end{cases} \ , \quad
+     I[n] = \begin{cases}
+                x[n], \quad |\Delta x| > |\Delta y| \\
+                y[n], \quad |\Delta x| < |\Delta y| 
+              \end{cases} \ , \quad
+     \end{align*}
 
-\underline{If $|\Delta x| > |\Delta y|$:}
+\underline{for $n = 0 \rightarrow N - 2$:}
 \begin{align*}
-    &x[n + 1] = x[n] + \sgn\big(\Delta x\big) \\ \\ 
-    &y[n + 1] = \begin{cases}
-                    y[n] \quad \quad \quad \quad \quad, \quad 2\sgn\big(\Delta y\big)\Bigg(n\Delta y - Ny[n] \Bigg) < \tau \\
-                    y[n] + \sgn\big(\Delta y\big), \quad 2\sgn\big(\Delta y\big)\Bigg(n\Delta y - Ny[n] \Bigg) \geq \tau
+    &I[n + 1] = I[n] + \sgn\big(\Delta I\big) \\ \\ 
+    &O[n + 1] = \begin{cases}
+                    O[n] \quad \quad \quad \quad \quad, \quad 2\sgn\big(\Delta O\big)\Bigg(n\Delta O - NO[n] \Bigg) < \tau \\
+                    O[n] + \sgn\big(\Delta O\big), \quad 2\sgn\big(\Delta O\big)\Bigg(n\Delta O - NO[n] \Bigg) \geq \tau
                   \end{cases} \\ \\ 
 \end{align*}
-\underline{else}
-\begin{align*}
-    &y[n + 1] = y[n] + \sgn\big(\Delta y\big) \\ \\ 
-    &x[n + 1] = \begin{cases}
-                    x[n] \quad \quad \quad \quad \quad, \quad 2\sgn\big(\Delta y\big)\Bigg(n\Delta x - Nx[n] \Bigg) < \tau \\
-                    x[n] + \sgn\big(\Delta x\big), \quad 2\sgn\big(\Delta x\big)\Bigg(n\Delta x - Nx[n] \Bigg) \geq \tau
-                  \end{cases} \\ \\ 
-\end{align*}
-
 
 \end{document}
