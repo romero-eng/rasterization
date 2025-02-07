@@ -23,6 +23,7 @@ def line(x_1: int, y_1: int,
     delta_O: int = delta_y if non_steep else delta_x
     O_1: int = y_1 if non_steep else x_1
     O_2: int = y_2 if non_steep else x_2
+    orthogonal_axis: int = 1 if non_steep else 0
 
     sgn_delta_x: int = np.sign(delta_x)
     sgn_delta_y: int = np.sign(delta_y)
@@ -39,7 +40,7 @@ def line(x_1: int, y_1: int,
 
     for n in range(0, N - 1):
 
-        decision = 2*sgn_delta_O*(n*delta_O - N*points[n][1 if non_steep else 0]) >= T
+        decision = 2*sgn_delta_O*(n*delta_O - N*points[n][orthogonal_axis]) >= T
 
         points[n + 1] = \
             (points[n][0] + sgn_delta_x*(1 if     non_steep or decision else 0),

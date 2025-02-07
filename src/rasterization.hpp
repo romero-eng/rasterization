@@ -7,7 +7,7 @@
 
 namespace Rasterization
 {
-    std::vector<std::array<int, 2>> Line(const std::array<std::array<int, 2>>& line_points);
+    std::vector<std::array<int, 2>> Line(const std::array<std::array<int, 2>, 2>& line_points);
 }
 
 #endif
