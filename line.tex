@@ -106,16 +106,14 @@
 \begin{align*}
     &\Delta x = x_{2} - x_{1} \\ \\
     &\Delta y = y_{2} - y_{1} \\ \\
-    &N = \begin{cases}
-            |\Delta x|, \quad |\Delta x| > |\Delta y| \\ \\
-            |\Delta y|, \quad |\Delta y| < |\Delta y|
-           \end{cases} \\ \\  
-    &\tau = N - 2d, \quad d \equiv \begin{cases}
-                                        \sgn\big(\Delta y\big)\bigg(\big(N - 1\big)y_{1} + y_{2}\bigg), \quad |\Delta x| > |\Delta y| \\  
-                                        \sgn\big(\Delta x\big)\bigg(\big(N - 1\big)x_{1} + x_{2}\bigg), \quad |\Delta x| < |\Delta y| 
-                                     \end{cases} \\ \\
-    &x[0] = x_{1}, x[N] = x_{2} \\ \\
-    &y[0] = y_{1}, y[N] = y_{2} \\ \\ 
+    &O = \begin{cases}
+            y, \quad |\Delta x| > |\Delta y| \\
+            x, \quad |\Delta x| < |\Delta y|
+           \end{cases} \ , \quad
+     I = \begin{cases}
+            x, \quad |\Delta x| > |\Delta y| \\
+            y, \quad |\Delta x| < |\Delta y| 
+           \end{cases} \\ \\
     &\Delta O \equiv \begin{cases}
                         \Delta y, \quad |\Delta x| > |\Delta y| \\
                         \Delta x, \quad |\Delta x| < |\Delta y| 
@@ -123,16 +121,12 @@
      \Delta I \equiv \begin{cases}
                         \Delta x, \quad |\Delta x| > |\Delta y| \\
                         \Delta y, \quad |\Delta x| < |\Delta y| 
-                       \end{cases}  \\ \\
-    &O[n] = \begin{cases}
-                y[n], \quad |\Delta x| > |\Delta y| \\
-                x[n], \quad |\Delta x| < |\Delta y|
-              \end{cases} \ , \quad
-     I[n] = \begin{cases}
-                x[n], \quad |\Delta x| > |\Delta y| \\
-                y[n], \quad |\Delta x| < |\Delta y| 
-              \end{cases} \ , \quad
-     \end{align*}
+                       \end{cases} \\ \\ 
+    &N = |\Delta I| \\ \\  
+    &\tau = N - 2\sgn\big(\Delta O\big)\bigg(\big(N - 1\big)O_{1} + O_{2}\bigg) \\ \\
+    &x[0] = x_{1}, x[N] = x_{2} \\ \\
+    &y[0] = y_{1}, y[N] = y_{2} \\ \\
+\end{align*}
 
 \underline{for $n = 0 \rightarrow N - 2$:}
 \begin{align*}

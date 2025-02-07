@@ -17,15 +17,19 @@ def line(x_1: int, y_1: int,
     delta_x: int = x_2 - x_1
     delta_y: int = y_2 - y_1
 
-    sgn_delta_x: int = np.sign(delta_x)
-    sgn_delta_y: int = np.sign(delta_y)
-
     non_steep: bool = abs(delta_x) > abs(delta_y)
 
-    N: int = abs(delta_x if non_steep else delta_y)
-    T: int = N - 2*(sgn_delta_y*((N - 1)*y_1 + y_2) if non_steep else sgn_delta_x*((N - 1)*x_1 + x_2))
-    sgn_delta_O: int = sgn_delta_y if non_steep else sgn_delta_x
+    delta_I: int = delta_x if non_steep else delta_y
     delta_O: int = delta_y if non_steep else delta_x
+    O_1: int = y_1 if non_steep else x_1
+    O_2: int = y_2 if non_steep else x_2
+
+    sgn_delta_x: int = np.sign(delta_x)
+    sgn_delta_y: int = np.sign(delta_y)
+    sgn_delta_O: int = np.sign(delta_O)
+
+    N: int = abs(delta_I)
+    T: int = N - 2*sgn_delta_O*((N - 1)*O_1 + O_2)
 
     points: np.ndarray[tuple[int, int], np.dtype[Any]] = np.empty((N + 1, 2), dtype=int)
     points[0] = (x_1, y_1)
