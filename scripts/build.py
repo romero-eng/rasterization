@@ -42,8 +42,36 @@ def run_shell_command(description: str,
         raise Exception(f'\n{printable_shell_results:s}')
 
 
+def create_dynamic_library(src_dir: Path,
+                           build_dir: Path,
+                           source_files: list[str],
+                           library_name: str) -> None:
+
+    obj_file: Path
+    obj_files: list[Path] = []
+
+    for file in source_files:
+
+        obj_file = build_dir/f"{file:s}.o"
+        run_shell_command(f"Compile {file:s}", f"g++ -c {str(src_dir/file):s}.cpp -o {str(obj_file):s} -std=c++2b -I /usr/include/python3.12 -pedantic-errors -Wall -Wextra -Weffc++ -Wconversion -Wsign-conversion")
+        obj_files.append(obj_file)
+
+    obj_files_str = " ".join([str(file) for file in obj_files])
+    run_shell_command("Dynamically Link into {library_name:s}.so", f"g++ {obj_files_str:s} -fPIC -shared -o {str(build_dir/library_name):s}.so")
+
+    for file in obj_files:
+        file.unlink()
+
+
 if (__name__=="__main__"):
 
-    run_shell_command("Compile rasterization.cpp", "g++ -c src/rasterization.cpp -o rasterization.o -std=c++2b -pedantic-errors -Wall -Wextra -Weffc++ -Wconversion -Wsign-conversion")
+    build_dir = Path(os.getcwd())/"build"
 
+    if(not build_dir.exists()):
+        build_dir.mkdir()
+
+    create_dynamic_library(Path(os.getcwd())/"src",
+                           Path(os.getcwd())/"build",
+                           ["Rasterization", "Rasterizationmodule"],
+                           "Rasterization")
 
