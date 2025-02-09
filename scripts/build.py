@@ -58,7 +58,7 @@ def create_python_module(build_dir: Path,
 
     for src_file in source_files:
 
-        obj_file = build_dir/f"{src_file.name:s}.o"
+        obj_file = build_dir/f"{src_file.stem:s}.o"
         run_shell_command(f"Compile {src_file.name:s}",
                           compile_cmd.format(source_file=str(src_file),
                                              object_file=str(obj_file)))
