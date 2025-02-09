@@ -64,7 +64,7 @@ def create_python_module(build_dir: Path,
                                              object_file=str(obj_file)))
         obj_files.append(obj_file)
 
-    run_shell_command("Dynamically Link into {module_name:s} module",
+    run_shell_command(f"Dynamically Link into {module_name:s} module",
                       link_cmd.format(object_files=" ".join([str(file) for file in obj_files]),
                                       python_module=str(Path(site.getsitepackages()[0])/f"{module_name:s}.so")))
 
