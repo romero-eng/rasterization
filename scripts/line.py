@@ -44,7 +44,7 @@ def py_impl_line(x_1: int, y_1: int,
         decision = 2*sgn_delta_O*(n*delta_O - N*points[n][orthogonal_axis]) >= T
 
         points[n + 1] = \
-            (points[n][0] + sgn_delta_x*(1 if     non_steep or decision else 0),
+            (points[n][0] + sgn_delta_x*(1 if     non_steep or decision else 0),  # noqa: E271
              points[n][1] + sgn_delta_y*(1 if not non_steep or decision else 0))
 
     return points
@@ -72,7 +72,7 @@ def plot_line_rasterization(x_1: int, y_1: int,
     ax.plot(x_1, y_1, marker="o", color="black")
     ax.plot(x_2, y_2, marker="o", color="black")
 
-    points: np.ndarray[tuple[int, int], np.dtype[Any]] = np.array(Rasterization.Line(x_1, y_1, x_2, y_2))  # py_impl_line(x_1, y_1, x_2, y_2)
+    points: np.ndarray[tuple[int, int], np.dtype[Any]] = np.array(Rasterization.Line(x_1, y_1, x_2, y_2))  # py_impl_line(x_1, y_1, x_2, y_2)  # noqa: E501
     print(points)
     for i in range(0, len(points) - 1):
         ax.plot([points[i][0], points[i + 1][0]],
