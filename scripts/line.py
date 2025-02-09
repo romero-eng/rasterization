@@ -5,14 +5,15 @@ from typing import Any
 import argparse
 import subprocess
 import os
+import Rasterization
 
 
 matplotlib.use("Agg")
 plt.rcParams['text.usetex'] = True
 
 
-def line(x_1: int, y_1: int,
-         x_2: int, y_2: int) -> np.ndarray[tuple[int, int], np.dtype[Any]]:
+def py_impl_line(x_1: int, y_1: int,
+                 x_2: int, y_2: int) -> np.ndarray[tuple[int, int], np.dtype[Any]]:
 
     delta_x: int = x_2 - x_1
     delta_y: int = y_2 - y_1
@@ -71,7 +72,7 @@ def plot_line_rasterization(x_1: int, y_1: int,
     ax.plot(x_1, y_1, marker="o", color="black")
     ax.plot(x_2, y_2, marker="o", color="black")
 
-    points: np.ndarray[tuple[int, int], np.dtype[Any]] = line(x_1, y_1, x_2, y_2)
+    points: np.ndarray[tuple[int, int], np.dtype[Any]] = np.array(Rasterization.Line(x_1, y_1, x_2, y_2))  # py_impl_line(x_1, y_1, x_2, y_2)
     print(points)
     for i in range(0, len(points) - 1):
         ax.plot([points[i][0], points[i + 1][0]],
