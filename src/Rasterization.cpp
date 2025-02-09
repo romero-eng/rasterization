@@ -1,6 +1,6 @@
 # if defined(__linux__)
 
-# include "rasterization.hpp" 
+# include "Rasterization.hpp" 
 
 
 std::vector<std::array<int, 2>> Rasterization::Line(const std::array<std::array<int, 2>, 2>& line_points)
