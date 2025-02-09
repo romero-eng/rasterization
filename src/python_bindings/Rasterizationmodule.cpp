@@ -5,7 +5,7 @@
 # include <vector>
 # include <ranges>
 
-# include "Rasterization.hpp"
+# include "../orig_algo_impl/Rasterization.hpp"
 
 
 PyDoc_STRVAR(Line_doc, "Line Rasterization Algorithm");
