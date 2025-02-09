@@ -1,6 +1,7 @@
 import os
 import subprocess
 from pathlib import Path
+import site
 
 
 def mapping_to_string(mapping_title: str,
@@ -42,36 +43,44 @@ def run_shell_command(description: str,
         raise Exception(f'\n{printable_shell_results:s}')
 
 
-def create_dynamic_library(src_dir: Path,
-                           build_dir: Path,
-                           source_files: list[str],
-                           library_name: str) -> None:
+def create_python_module(build_dir: Path,
+                         source_files: list[Path],
+                         module_name: str) -> None:
+
+    compile_cmd: str = "g++ -c {source_file:s} -o {object_file:s} -std=c++2b -I /usr/include/python3.12 -pedantic-errors -Wall -Wextra -Weffc++ -Wconversion -Wsign-conversion"  # noqa: E501
+    link_cmd: str = "g++ {object_files:s} -fPIC -shared -o {python_module:s}"
+
+    if (not build_dir.exists()):
+        build_dir.mkdir()
 
     obj_file: Path
     obj_files: list[Path] = []
 
-    for file in source_files:
+    for src_file in source_files:
 
-        obj_file = build_dir/f"{file:s}.o"
-        run_shell_command(f"Compile {file:s}", f"g++ -c {str(src_dir/file):s}.cpp -o {str(obj_file):s} -std=c++2b -I /usr/include/python3.12 -pedantic-errors -Wall -Wextra -Weffc++ -Wconversion -Wsign-conversion")
+        obj_file = build_dir/f"{src_file.name:s}.o"
+        run_shell_command(f"Compile {src_file.name:s}",
+                          compile_cmd.format(source_file=str(src_file),
+                                             object_file=str(obj_file)))
         obj_files.append(obj_file)
 
-    obj_files_str = " ".join([str(file) for file in obj_files])
-    run_shell_command("Dynamically Link into {library_name:s}.so", f"g++ {obj_files_str:s} -fPIC -shared -o {str(build_dir/library_name):s}.so")
+    run_shell_command("Dynamically Link into {module_name:s} module",
+                      link_cmd.format(object_files=" ".join([str(file) for file in obj_files]),
+                                      python_module=str(Path(site.getsitepackages()[0])/f"{module_name:s}.so")))
 
     for file in obj_files:
         file.unlink()
 
+    build_dir.rmdir()
 
-if (__name__=="__main__"):
 
-    build_dir = Path(os.getcwd())/"build"
+if (__name__ == "__main__"):
 
-    if(not build_dir.exists()):
-        build_dir.mkdir()
+    src_dir: Path = Path(os.getcwd())/"src"
+    src_files: list[Path] = \
+        [src_dir/"orig_algo_impl"/"Rasterization.cpp",
+         src_dir/"python_bindings"/"Rasterizationmodule.cpp"]
 
-    create_dynamic_library(Path(os.getcwd())/"src",
-                           Path(os.getcwd())/"build",
-                           ["Rasterization", "Rasterizationmodule"],
-                           "Rasterization")
-
+    create_python_module(Path(os.getcwd())/"build",
+                         src_files,
+                         "Rasterization")
