@@ -1,3 +1,5 @@
+# if defined(__linux__)
+
 # define PY_SSIZE_CLEAN
 # include <Python.h>
 
@@ -61,4 +63,6 @@ static struct PyModuleDef rasterizationmodule = {
 
 PyMODINIT_FUNC PyInit_Rasterization() { return PyModule_Create(&rasterizationmodule); }
 
-
+# else
+# error "This file is only meant to be compiled on a Linux OS"
+# endif
