@@ -9,7 +9,9 @@
 
 
 PyDoc_STRVAR(Line_doc, "Line Rasterization Algorithm");
-static PyObject* Line(PyObject* self, PyObject* args)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wunused-parameter"
+static PyObject* Line(PyObject* self, PyObject* args) // Have to suppress a warning here due to the insufficiencies of the Python/C API
 {
     int x_1;
     int y_1;
@@ -21,7 +23,7 @@ static PyObject* Line(PyObject* self, PyObject* args)
     std::vector<std::array<int, 2>> points {Rasterization::Line({{{x_1, y_1}, {x_2, y_2}}})};
 
     PyObject* tmp_py_tuple;
-    PyObject* py_list {PyList_New(points.size())};
+    PyObject* py_list {PyList_New(static_cast<Py_ssize_t>(points.size()))};
 
     for(std::size_t n {0}; n < points.size(); n++) {
         const auto& [x, y] = points[n];
@@ -33,6 +35,7 @@ static PyObject* Line(PyObject* self, PyObject* args)
 
     return py_list;
 }
+#pragma GCC diagnostic pop
 
 
 static PyMethodDef rasterizationMethods[] = {
@@ -49,7 +52,11 @@ static struct PyModuleDef rasterizationmodule = {
     "Rasterization",
     rasterization_module_doc,
     -1,
-    rasterizationMethods};
+    rasterizationMethods,
+    NULL,
+    NULL,
+    NULL,
+    NULL};
 
 
 PyMODINIT_FUNC PyInit_Rasterization() { return PyModule_Create(&rasterizationmodule); }
