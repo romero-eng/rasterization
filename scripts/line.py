@@ -62,10 +62,11 @@ def plot_line_rasterization(x_1: int, y_1: int,
     abs_delta_y: int = abs(y_2 - y_1)
 
     fig, ax = plt.subplots()
-    if (abs_delta_x > abs_delta_y):
-        fig.set_size_inches(0.6*abs_delta_x, abs_delta_y)
-    else:
-        fig.set_size_inches(abs_delta_x, 0.6*abs_delta_y)
+    if (abs_delta_x != 0 and abs_delta_y != 0): 
+        if (abs_delta_x > abs_delta_y):
+            fig.set_size_inches(0.6*abs_delta_x, abs_delta_y)
+        else:
+            fig.set_size_inches(abs_delta_x, 0.6*abs_delta_y)
     fig.set_dpi(100)
 
     ax.plot([x_1, x_2], [y_1, y_2], color="blue")
