@@ -2,6 +2,7 @@ import os
 import subprocess
 from pathlib import Path
 import site
+import shutil
 
 
 def mapping_to_string(mapping_title: str,
@@ -43,13 +44,15 @@ def run_shell_command(description: str,
         raise Exception(f'\n{printable_shell_results:s}')
 
 
-def create_python_module(build_dir: Path,
-                         source_files: list[Path],
-                         module_name: str) -> None:
+def create_python_module(source_files: list[Path],
+                         py_wrappers: list[Path],
+                         library_name: str) -> None:
 
+    
     compile_cmd: str = "g++ -c {source_file:s} -o {object_file:s} -std=c++2b -I /usr/include/python3.12 -pedantic-errors -Wall -Wextra -Weffc++ -Wconversion -Wsign-conversion"  # noqa: E501
     link_cmd: str = "g++ {object_files:s} -fPIC -shared -o {python_module:s}"
-
+ 
+    build_dir: Path = Path("build")
     if (not build_dir.exists()):
         build_dir.mkdir()
 
@@ -64,9 +67,19 @@ def create_python_module(build_dir: Path,
                                              object_file=str(obj_file)))
         obj_files.append(obj_file)
 
-    run_shell_command(f"Dynamically Link into {module_name:s} module",
+    tmp_module_dir: Path = build_dir/library_name
+    tmp_module_dir.mkdir()
+    (tmp_module_dir/"py.typed").touch()
+    for py_wrapper in py_wrappers:
+        shutil.copy(py_wrapper, tmp_module_dir/py_wrapper.name) 
+
+    run_shell_command(f"Dynamically Link into {library_name:s} module",
                       link_cmd.format(object_files=" ".join([str(file) for file in obj_files]),
-                                      python_module=str(Path(site.getsitepackages()[0])/f"{module_name:s}.so")))
+                                      python_module=str(tmp_module_dir/f"{library_name:s}.so")))
+ 
+    site_package_paths: list[Path] = [Path(tmp_path) for tmp_path in site.getsitepackages()]
+    module_dir: Path = [tmp_path for tmp_path in site_package_paths if tmp_path.name == "site-packages"][0]/library_name
+    shutil.move(tmp_module_dir, module_dir)
 
     for file in obj_files:
         file.unlink()
@@ -76,11 +89,15 @@ def create_python_module(build_dir: Path,
 
 if (__name__ == "__main__"):
 
-    src_dir: Path = Path(os.getcwd())/"src"
+    src_dir: Path = Path("src")
+
     src_files: list[Path] = \
         [src_dir/"orig_algo_impl"/"Rasterization.cpp",
          src_dir/"python_bindings"/"Rasterizationmodule.cpp"]
 
-    create_python_module(Path(os.getcwd())/"build",
-                         src_files,
+    py_wrappers: list[Path] = \
+        [src_dir/"python_bindings"/"__init__.py"]
+
+    create_python_module(src_files,
+                         py_wrappers, 
                          "Rasterization")

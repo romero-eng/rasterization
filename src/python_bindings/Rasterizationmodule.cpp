@@ -10,7 +10,6 @@
 # include "../orig_algo_impl/Rasterization.hpp"
 
 
-PyDoc_STRVAR(Line_doc, "Line Rasterization Algorithm");
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wunused-parameter"
 static PyObject* Line(PyObject* self, PyObject* args) // Have to suppress a warning here due to the insufficiencies of the Python/C API
@@ -44,7 +43,7 @@ static PyMethodDef rasterizationMethods[] = {
     {"Line",
      Line,
      METH_VARARGS,
-     Line_doc},
+     NULL},
     {NULL, NULL, 0, NULL}};
 
 
