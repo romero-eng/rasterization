@@ -1,0 +1,1 @@
+1. Find out if library name and module name for Python C Extension can be coordinated, instead of having it independently appear 3 times across different files (Rasterizationmodule.cpp, __init__.py, and build.py)
