@@ -1,5 +1,7 @@
 # if defined(__linux__)
 
+# ifdef LIBRARY_NAME
+
 # define PY_SSIZE_CLEAN
 # include <Python.h>
 
@@ -50,7 +52,7 @@ static PyMethodDef rasterizationMethods[] = {
 PyDoc_STRVAR(rasterization_module_doc, "Python bindings for the C++ Rasterization Library");
 static struct PyModuleDef rasterizationmodule = {
     PyModuleDef_HEAD_INIT,
-    "Rasterization",
+    LIBRARY_NAME,
     rasterization_module_doc,
     -1,
     rasterizationMethods,
@@ -61,6 +63,10 @@ static struct PyModuleDef rasterizationmodule = {
 
 
 PyMODINIT_FUNC PyInit_Rasterization() { return PyModule_Create(&rasterizationmodule); }
+
+# else
+# error "Must define the name of the Python module to be created"
+# endif
 
 # else
 # error "This file is only meant to be compiled on a Linux OS"
