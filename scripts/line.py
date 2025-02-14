@@ -51,23 +51,19 @@ def py_impl_line(x_1: int, y_1: int,
 
 
 def plot_line_rasterization(x_1: int, y_1: int,
-                            x_2: int, y_2: int) -> None:
+                            x_2: int, y_2: int,
+                            x_inches: int,
+                            y_inches: int,
+                            dpi: int) -> None:
 
     x_min: int = min(x_1, x_2) - 2
     x_max: int = max(x_1, x_2) + 2
     y_min: int = min(y_1, y_2) - 2
     y_max: int = max(y_1, y_2) + 2
 
-    abs_delta_x: int = abs(x_2 - x_1)
-    abs_delta_y: int = abs(y_2 - y_1)
-
     fig, ax = plt.subplots()
-    if (abs_delta_x != 0 and abs_delta_y != 0): 
-        if (abs_delta_x > abs_delta_y):
-            fig.set_size_inches(0.6*abs_delta_x, abs_delta_y)
-        else:
-            fig.set_size_inches(abs_delta_x, 0.6*abs_delta_y)
-    fig.set_dpi(100)
+    fig.set_size_inches(x_inches, y_inches)
+    fig.set_dpi(dpi)
 
     ax.plot([x_1, x_2], [y_1, y_2], color="blue")
     ax.plot(x_1, y_1, marker="o", color="black")
@@ -90,6 +86,8 @@ def plot_line_rasterization(x_1: int, y_1: int,
     ax.set_aspect("equal")
     ax.grid()
 
+    fig.tight_layout()
+
     fig.savefig("line.png")
     subprocess.run(["feh", "line.png"])
     os.remove("line.png")
@@ -105,7 +103,13 @@ if (__name__ == "__main__"):
     parser.add_argument("Y_1", type=int)
     parser.add_argument("X_2", type=int)
     parser.add_argument("Y_2", type=int)
-    args = parser.parse_args()
+    parser.add_argument("X_inches", type=int)
+    parser.add_argument("Y_inches", type=int)
+    parser.add_argument("DPI", type=int)
+    args: argparse.Namespace = parser.parse_args()
 
     plot_line_rasterization(args.X_1, args.Y_1,
-                            args.X_2, args.Y_2)
+                            args.X_2, args.Y_2,
+                            args.X_inches,
+                            args.Y_inches,
+                            args.DPI)
