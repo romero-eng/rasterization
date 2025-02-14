@@ -97,41 +97,40 @@ def link_object_files(object_files: list[Path],
         file.unlink()
 
 
-def create_python_module(source_files: list[Path],
-                         module_files: list[Path],
-                         py_wrappers: list[Path],
-                         library_name: str) -> None:
+def create_python_module(library_name: str,
+                         module_name: str, 
+                         src_files: list[Path], 
+                         py_bindings: list[Path],
+                         prototype_wrapper_scripts: list[Path]) -> None:
  
     build_dir: Path = Path("build")
     if (build_dir.exists()):
         shutil.rmtree(build_dir)
     build_dir.mkdir()
 
+    module_dir: Path = [tmp_path for tmp_path in [Path(tmp_path) for tmp_path in site.getsitepackages()] if tmp_path.name == "site-packages"][0]/module_name  # noqa: E501
+    if (module_dir.exists()):
+        shutil.rmtree(module_dir)
+
     tmp_module_dir: Path = build_dir/library_name
     tmp_module_dir.mkdir()
 
-    src_obj_files = compile_source_files(source_files, build_dir)
-
-    module_obj_files = \
-        compile_source_files(module_files,
-                             build_dir,
-                             [Path("/usr")/"include"/"python3.12"],
-                             {"LIBRARY_NAME": library_name})
-
-    link_object_files(src_obj_files + module_obj_files,
+    link_object_files(compile_source_files(src_files,
+                                           build_dir) + \
+                      compile_source_files(py_bindings,
+                                           build_dir,
+                                           [Path("/usr")/"include"/"python3.12"],
+                                           {"LIBRARY_NAME": library_name}),
                       tmp_module_dir,
                       library_name)
 
     (tmp_module_dir/"py.typed").touch()
-    for py_wrapper in py_wrappers:
-        shutil.copy(py_wrapper, tmp_module_dir/py_wrapper.name)
-
-    module_dir: Path = [tmp_path for tmp_path in [Path(tmp_path) for tmp_path in site.getsitepackages()] if tmp_path.name == "site-packages"][0]/library_name  # noqa: E501
-    print(module_dir)
-    if (module_dir.exists()):
-        shutil.rmtree(module_dir)
+    for prototype_wrapper_script in prototype_wrapper_scripts:
+        with open(prototype_wrapper_script, "r") as prototype_wrapper_script_IO:
+            with open(tmp_module_dir/f"{prototype_wrapper_script.stem:s}.py", "a") as wrapper_script_IO:
+                wrapper_script_IO.write(prototype_wrapper_script_IO.read().format(library_name=library_name))
+    
     shutil.move(tmp_module_dir, module_dir)
-
     build_dir.rmdir()
 
 
@@ -139,16 +138,17 @@ if (__name__ == "__main__"):
 
     src_dir: Path = Path("src")
 
-    src_files: list[Path] = \
+    source_files: list[Path] = \
         [src_dir/"orig_algo_impl"/"Rasterization.cpp"]
 
-    mod_files: list[Path] = \
+    py_bindings: list[Path] = \
         [src_dir/"python_bindings"/"Rasterizationmodule.cpp"]
 
-    py_wrappers: list[Path] = \
-        [src_dir/"python_bindings"/"__init__.py"]
+    module_proto_scripts: list[Path] = \
+        [src_dir/"python_bindings"/"__init__.txt"]
 
-    create_python_module(src_files,
-                         mod_files,
-                         py_wrappers, 
-                         "Rasterization")
+    create_python_module("Rasterization",
+                         "rasterization",
+                         source_files,
+                         py_bindings,
+                         module_proto_scripts)
