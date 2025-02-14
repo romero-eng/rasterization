@@ -1,4 +1,3 @@
-import os
 import subprocess
 from pathlib import Path
 import site
@@ -52,9 +51,9 @@ def compile_source_files(source_files: list[Path],
     warnings: list[str] = ["all", "extra", "effc++", "conversion", "sign-conversion"]
 
     language_standard_flags: list[str] = ["std=c++2b"]
-    build_configuration_flags: list[str] = ["O2", "DNDEBUG"] 
+    build_configuration_flags: list[str] = ["O2", "DNDEBUG"]
     include_flags: list[str] = [f"I {str(include_dir):s}" for include_dir in include_dirs]
-    warning_flags: list[str] = ["pedantic-errors"] + [f"W{flag:s}" for flag in warnings] 
+    warning_flags: list[str] = ["pedantic-errors"] + [f"W{flag:s}" for flag in warnings]
     preprocessor_flags: list[str] = [f"D{macro:s}=\\\"{value:s}\\\"" for macro, value in preprocessor_macros.items()]
 
     flags: list[str] = \
@@ -98,11 +97,11 @@ def link_object_files(object_files: list[Path],
 
 
 def create_python_module(library_name: str,
-                         module_name: str, 
-                         src_files: list[Path], 
+                         module_name: str,
+                         src_files: list[Path],
                          py_bindings: list[Path],
                          prototype_wrapper_scripts: list[Path]) -> None:
- 
+
     build_dir: Path = Path("build")
     if (build_dir.exists()):
         shutil.rmtree(build_dir)
@@ -116,7 +115,7 @@ def create_python_module(library_name: str,
     tmp_module_dir.mkdir()
 
     link_object_files(compile_source_files(src_files,
-                                           build_dir) + \
+                                           build_dir) +
                       compile_source_files(py_bindings,
                                            build_dir,
                                            [Path("/usr")/"include"/"python3.12"],
@@ -129,7 +128,7 @@ def create_python_module(library_name: str,
         with open(prototype_wrapper_script, "r") as prototype_wrapper_script_IO:
             with open(tmp_module_dir/f"{prototype_wrapper_script.stem:s}.py", "a") as wrapper_script_IO:
                 wrapper_script_IO.write(prototype_wrapper_script_IO.read().format(library_name=library_name))
-    
+
     shutil.move(tmp_module_dir, module_dir)
     build_dir.rmdir()
 
