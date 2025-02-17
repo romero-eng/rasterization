@@ -2,6 +2,12 @@ import subprocess
 import numpy as np
 import matplotlib.pyplot as plt
 import os
+import argparse
+
+
+def py_impl_circle(radius: int) -> None:
+
+    
 
 
 def plot_circle_rasterization(radius: int,
@@ -36,5 +42,13 @@ def plot_circle_rasterization(radius: int,
 
 if (__name__=="__main__"):
 
-    plot_circle_rasterization(20, 0.001)
+    parser = \
+        argparse.ArgumentParser(prog="CircleRasterization",
+                                description="Visualization of Circle Rasterization Algorithm")
+
+    parser.add_argument("radius", type=int)
+    parser.add_argument("x_step", type=float)
+    args: argparse.Namespace = parser.parse_args()
+
+    plot_circle_rasterization(args.radius, args.x_step)
 
