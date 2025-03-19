@@ -3,24 +3,87 @@ import numpy as np
 import matplotlib.pyplot as plt
 import os
 import argparse
+from typing import Any
 
 
-def py_impl_circle(radius: int) -> None:
+def py_impl_circle(radius: int) -> np.ndarray[tuple[int, int], np.dtype[Any]]:
 
-    
+    N: int = int(np.floor(radius/np.sqrt(2)))
+    tau: int = 4*np.square(radius) - 5
+
+    octant_1_points: np.ndarray[tuple[int, int], np.dtype[Any]] = np.empty((N + 1, 2), dtype=int)
+    octant_1_points[0] = (radius, 0)
+
+    decrement: bool
+
+    for n in range(0, N):
+
+        decrement = 4*(np.square(octant_1_points[n][0]) - octant_1_points[n][0] + np.square(n) + 2*n) >= tau
+
+        octant_1_points[n + 1] = \
+            (octant_1_points[n][0] - (1 if decrement else 0),
+             octant_1_points[n][1] + 1)
+
+    octant_2_points: np.ndarray[tuple[int, int], np.dtype[Any]] = \
+        np.empty((N + (1 if octant_1_points[N][0] > octant_1_points[N][1] else 0), 2), dtype=int)
+
+    for n in range(0, octant_2_points.shape[0]):
+        octant_2_points[n] = \
+            (octant_1_points[octant_2_points.shape[0] - 1 - n][1],
+             octant_1_points[octant_2_points.shape[0] - 1 - n][0])
+
+    quadrant_1_points: np.ndarray[tuple[int, int], np.dtype[Any]] = \
+        np.concatenate((octant_1_points, octant_2_points))
+    quadrant_2_points: np.ndarray[tuple[int, int], np.dtype[Any]] = \
+        np.empty((quadrant_1_points.shape[0] - 1, 2), dtype=int)
+
+    for n in range(0, quadrant_2_points.shape[0]):
+        quadrant_2_points[n] = \
+            (-quadrant_1_points[quadrant_1_points.shape[0] - 2 - n][0],
+              quadrant_1_points[quadrant_1_points.shape[0] - 2 - n][1])  # noqa: E127
+
+    top_half_arc_points: np.ndarray[tuple[int, int], np.dtype[Any]] = \
+        np.concatenate((quadrant_1_points, quadrant_2_points))
+    bottom_half_arc_points: np.ndarray[tuple[int, int], np.dtype[Any]] = \
+        np.empty((top_half_arc_points.shape[0] - 2, 2), dtype=int)
+
+    for n in range(0, bottom_half_arc_points.shape[0]):
+        bottom_half_arc_points[n] = \
+            ( top_half_arc_points[top_half_arc_points.shape[0] - 2 - n][0],  # noqa: E201
+             -top_half_arc_points[top_half_arc_points.shape[0] - 2 - n][1])  # noqa: E128
+
+    return np.concatenate((top_half_arc_points, bottom_half_arc_points))
 
 
 def plot_circle_rasterization(radius: int,
-                              x_step: float) -> None:
+                              x_step: float,
+                              x_inches: int,
+                              y_inches: int,
+                              dpi: int) -> None:
 
-    x: np.ndarray[int] = np.arange(-radius, radius + x_step, x_step)
-    top_half: np.ndarray[int] = np.sqrt(radius**2 - x**2)
-    bottom_half: np.ndarray[int] = -top_half
-    
+    x: np.ndarray[tuple[int], np.dtype[Any]] = np.arange(-radius, radius + x_step, x_step)
+    top_half: np.ndarray[tuple[int], np.dtype[Any]] = np.sqrt(radius**2 - x**2)
+    bottom_half: np.ndarray[tuple[int], np.dtype[Any]] = -top_half
+
     fig, ax = plt.subplots()
+    fig.set_size_inches(x_inches, y_inches)
+    fig.set_dpi(dpi)
 
-    ax.plot(x, top_half)
+    ax.plot(x,    top_half)
     ax.plot(x, bottom_half)
+
+    points: np.ndarray[tuple[int, int], np.dtype[Any]] = py_impl_circle(radius)
+
+    for i in range(0, len(points)):
+        print("({X: 2d}, {Y: 2d}), {angle:.2f}".format(X=points[i][0],
+                                                       Y=points[i][1],
+                                                       angle=(180/np.pi)*np.arctan2(points[i][1],
+                                                                                    points[i][0])))
+
+    for i in range(0, len(points) - 1):
+        ax.plot([points[i][0], points[i + 1][0]],
+                [points[i][1], points[i + 1][1]],
+                marker="x", color="black")
 
     ax.set_xticks(np.arange(-radius - 2, radius + 3, 1))
     ax.set_yticks(np.arange(-radius - 2, radius + 3, 1))
@@ -31,16 +94,15 @@ def plot_circle_rasterization(radius: int,
     ax.set_title("Circle")
     ax.set_aspect("equal")
     ax.grid()
- 
+
     fig.tight_layout()
- 
+
     fig.savefig("circle.png")
     subprocess.run(["feh", "circle.png"])
     os.remove("circle.png")
 
 
-
-if (__name__=="__main__"):
+if (__name__ == "__main__"):
 
     parser = \
         argparse.ArgumentParser(prog="CircleRasterization",
@@ -48,7 +110,13 @@ if (__name__=="__main__"):
 
     parser.add_argument("radius", type=int)
     parser.add_argument("x_step", type=float)
+    parser.add_argument("X_inches", type=int)
+    parser.add_argument("Y_inches", type=int)
+    parser.add_argument("DPI", type=int)
     args: argparse.Namespace = parser.parse_args()
 
-    plot_circle_rasterization(args.radius, args.x_step)
-
+    plot_circle_rasterization(args.radius,
+                              args.x_step,
+                              args.X_inches,
+                              args.Y_inches,
+                              args.DPI)
