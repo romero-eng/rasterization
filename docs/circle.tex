@@ -18,7 +18,7 @@
           \begin{align*}
                 x[0] = r, \quad y[0] = 0 
             \end{align*}
-    \item \underline{for $n = 0 \rightarrow N - 1$:} \\
+    \item \underline{for $n = 0 \rightarrow N - 2$:} \\
           \begin{align*}
             &y[n + 1] = y[n] + 1 \\ \\
             &x[n + 1] = \begin{cases}
@@ -66,14 +66,24 @@
     &\quad \quad \Rightarrow 4\Big(x^{2}[n] - x[n] + n^{2} + 2n\Big) \geq \tau, \quad \tau \equiv 4r^{2} - 5 \\ \\
 \end{align*}
 
-\underline{\textbf{Number of elements:}}
+\underline{\textbf{Number of elements in first octant:}}
 \begin{align*}
-    &\quad \quad \frac{dx\Big(y[N - 1]\Big)}{dy} \leq -1 \quad \big(\text{Second-to-last element should satisfy this condition}\big) \\ \\
+    &\quad \quad \frac{dx\Big(y[N - 1]\Big)}{dy} \leq -1 \quad \big(N - 1 \text{ instead of just } N \text{ due to zero-based indexing}\big) \\ \\
     &\Rightarrow \frac{-y[N - 1]}{\sqrt{r^{2} - y^{2}[N - 1]}} \leq -1 \\ \\
     &\Rightarrow \frac{-(N - 1)}{\sqrt{r^{2} - \big(N - 1\big)^{2}}} \leq -1 \\ \\
     &\Rightarrow N - 1 \leq \frac{r}{\sqrt{2}} \\ \\
     &\Rightarrow N = \floor\Bigg(\frac{r}{\sqrt{2}}\Bigg) + 1\\ \\
 \end{align*}
+
+\big(\textbf{Caution}\big) When $y[N - 1] = x[N - 1]$:
+\begin{align*}
+    & \arctan\Bigg(\frac{r}{\sqrt{2}}\Bigg) = \arctan\Bigg(\frac{y[N - 1]}{x[N - 1]}\Bigg) = 45^{\circ} \\
+\end{align*}
+
+Typically, the array sizes of the first and second octants are usually the same, but when $y[N - 1] = x[N - 1]$,
+there exists a center point in between the first and second octant which this algorithm counts as part of the first
+octant since it technically fulfills the boolean condition up above (e.g., r = 20). It must be checked and accounted for when filling
+in the second octant. \\ \\
 
 \underline{\textbf{Final First Octant Rasterization Algorithm:}} \\
 \begin{enumerate}
@@ -83,14 +93,46 @@
                 &N = \floor\Bigg(\frac{r}{\sqrt{2}}\Bigg) \\ \\
                 &\tau = 4r^{2} - 5
             \end{align*}
-    \item \underline{for $n = 0 \rightarrow N - 1$:} \\
+    \item \underline{for $n = 0 \rightarrow N - 2$:} \\
           \begin{align*}
             &y[n + 1] = y[n] + 1 \\ \\
             &x[n + 1] = x[n] - d, \quad d \equiv \begin{cases}
                                                      0 \ , \quad 4\Big(x^{2}[n] - x[n] + n^{2} + 2n\Big) < \tau \\ \\
                                                      1 \ , \quad 4\Big(x^{2}[n] - x[n] + n^{2} + 2n\Big) \geq \tau
                                                    \end{cases}
-      \end{align*}
+          \end{align*}
+    \item \underline{Fill in other octants/quadrants} \\ \\
+
+          \begin{align*}
+                M \equiv N - p, \quad p \equiv \begin{cases}
+                                                   1, \quad y[N - 1] = x[N - 1] \\ \\
+                                                   0, \quad y[N - 1] < x[N - 1]
+                                                 \end{cases} \\ \\
+                Q \equiv N + M \\ \\
+                T \equiv 2*Q - 1 \\ \\
+                C \equiv 2*(T - 1) \\ \\
+            \end{align*} 
+
+          \underline{for $n = 0 \rightarrow N - 1$:} \\
+            \begin{align*}
+                &x_{f}[n] = x[n] \\ \\
+                &y_{f}[n] = y[n] \\ \\
+              \end{align*}
+          \underline{for $m = N \rightarrow m = Q - 1$:} \\
+            \begin{align*}
+                &x_{f}[m] = y[M - 1 - m] \\ \\
+                &y_{f}[m] = x[M - 1 - m] \\ \\
+              \end{align*}
+          \underline{for $q = Q \rightarrow q = T - 1$:} \\
+             \begin{align*}
+                &x_{f}[q] =    -x_{f}[T - 1 - q] \\ \\
+                &y_{f}[q] = \ \ y_{f}[T - 1 - q] \\ \\
+               \end{align*}
+          \underline{for $t = T \rightarrow t = C - 1$:} \\
+             \begin{align*}
+                &x_{f}[t] = \ \ x_{f}[C - t] \\ \\
+                &y_{f}[t] =    -y_{f}[C - t] \\ \\
+               \end{align*}
 \end{enumerate}
 
 \end{document}
