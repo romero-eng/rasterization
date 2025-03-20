@@ -24,35 +24,32 @@ def py_impl_circle(radius: int) -> np.ndarray[tuple[int, int], np.dtype[Any]]:
             (octant_1_points[n][0] - (1 if decrement else 0),
              octant_1_points[n][1] + 1)
 
-    octant_2_points: np.ndarray[tuple[int, int], np.dtype[Any]] = \
-        np.empty((N + (1 if octant_1_points[N][0] > octant_1_points[N][1] else 0), 2), dtype=int)
+    M: int = N + (1 if octant_1_points[N][0] > octant_1_points[N][1] else 0)
+    Q: int = N + 1 + M
+    T: int = 2*Q - 1
+    C: int = 2*(T - 1)
 
-    for n in range(0, octant_2_points.shape[0]):
-        octant_2_points[n] = \
-            (octant_1_points[octant_2_points.shape[0] - 1 - n][1],
-             octant_1_points[octant_2_points.shape[0] - 1 - n][0])
+    circular_arc_points: np.ndarray[tuple[int, int], np.dtype[Any]] = np.empty((C, 2), dtype=int)
 
-    quadrant_1_points: np.ndarray[tuple[int, int], np.dtype[Any]] = \
-        np.concatenate((octant_1_points, octant_2_points))
-    quadrant_2_points: np.ndarray[tuple[int, int], np.dtype[Any]] = \
-        np.empty((quadrant_1_points.shape[0] - 1, 2), dtype=int)
+    for n in range(0, N + 1):
+        circular_arc_points[n] = octant_1_points[n]
 
-    for n in range(0, quadrant_2_points.shape[0]):
-        quadrant_2_points[n] = \
-            (-quadrant_1_points[quadrant_1_points.shape[0] - 2 - n][0],
-              quadrant_1_points[quadrant_1_points.shape[0] - 2 - n][1])  # noqa: E127
+    for m in range(N + 1, Q):
+        circular_arc_points[m] = \
+            (octant_1_points[M - 1 - m][1],
+             octant_1_points[M - 1 - m][0])
 
-    top_half_arc_points: np.ndarray[tuple[int, int], np.dtype[Any]] = \
-        np.concatenate((quadrant_1_points, quadrant_2_points))
-    bottom_half_arc_points: np.ndarray[tuple[int, int], np.dtype[Any]] = \
-        np.empty((top_half_arc_points.shape[0] - 2, 2), dtype=int)
+    for q in range(Q, T):
+        circular_arc_points[q] = \
+            (-circular_arc_points[2*(Q - 1) - q][0],
+              circular_arc_points[2*(Q - 1) - q][1])  # noqa: E127
 
-    for n in range(0, bottom_half_arc_points.shape[0]):
-        bottom_half_arc_points[n] = \
-            ( top_half_arc_points[top_half_arc_points.shape[0] - 2 - n][0],  # noqa: E201
-             -top_half_arc_points[top_half_arc_points.shape[0] - 2 - n][1])  # noqa: E128
+    for t in range(T, C):
+        circular_arc_points[t] = \
+            ( circular_arc_points[2*(T - 1) - t][0],  # noqa: E201
+             -circular_arc_points[2*(T - 1) - t][1])  # noqa: E128
 
-    return np.concatenate((top_half_arc_points, bottom_half_arc_points))
+    return circular_arc_points
 
 
 def plot_circle_rasterization(radius: int,
