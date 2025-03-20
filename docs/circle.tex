@@ -62,17 +62,17 @@
     &\quad \quad \Rightarrow 2x[n] - 2x\Big(y[n + 1]\Big) \geq 1 \quad \big(\text{Integer Bitshift Modification}\big) \\ \\
     &\quad \quad \Rightarrow 2x[n] - 2\sqrt{r^{2} - \big(n + 1\big)^{2}} \geq 1 \\ \\
     &\quad \quad \Rightarrow 2\sqrt{r^{2} - \big(n + 1\big)^{2}} \leq 2x[n] - 1 \\ \\
-    &\quad \quad \Rightarrow 4\Big(r^{2} - \big(n + 1\big)^{2}\Big) \leq \Big(2x[n] - 1\Big)^{2} \quad \big(\text{Only possible we remain in first quadrant}\big) \\ \\
+    &\quad \quad \Rightarrow 4\Big(r^{2} - \big(n + 1\big)^{2}\Big) \leq \Big(2x[n] - 1\Big)^{2} \quad \big(\text{Only possible since we remain in first quadrant}\big) \\ \\
     &\quad \quad \Rightarrow 4\Big(x^{2}[n] - x[n] + n^{2} + 2n\Big) \geq \tau, \quad \tau \equiv 4r^{2} - 5 \\ \\
 \end{align*}
 
 \underline{\textbf{Number of elements:}}
 \begin{align*}
-    &\quad \quad \frac{dx\Big(y[N]\Big)}{dy} \leq -1 \\ \\
-    &\Rightarrow \frac{-y[N]}{\sqrt{r^{2} - y^{2}[n + 1]}} \leq -1 \\ \\
-    &\Rightarrow \frac{-N}{\sqrt{r^{2} - \big(N\big)^{2}}} \leq -1 \\ \\
-    &\Rightarrow N \leq \frac{r}{\sqrt{2}} \\ \\
-    &\Rightarrow N = \floor\Bigg(\frac{r}{\sqrt{2}}\Bigg) \\ \\
+    &\quad \quad \frac{dx\Big(y[N - 1]\Big)}{dy} \leq -1 \quad \big(\text{Second-to-last element should satisfy this condition}\big) \\ \\
+    &\Rightarrow \frac{-y[N - 1]}{\sqrt{r^{2} - y^{2}[N - 1]}} \leq -1 \\ \\
+    &\Rightarrow \frac{-(N - 1)}{\sqrt{r^{2} - \big(N - 1\big)^{2}}} \leq -1 \\ \\
+    &\Rightarrow N - 1 \leq \frac{r}{\sqrt{2}} \\ \\
+    &\Rightarrow N = \floor\Bigg(\frac{r}{\sqrt{2}}\Bigg) + 1\\ \\
 \end{align*}
 
 \underline{\textbf{Final First Octant Rasterization Algorithm:}} \\
