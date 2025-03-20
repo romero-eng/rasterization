@@ -41,13 +41,13 @@ def py_impl_circle(radius: int) -> np.ndarray[tuple[int, int], np.dtype[Any]]:
 
     for q in range(Q, T):
         circular_arc_points[q] = \
-            (-circular_arc_points[2*(Q - 1) - q][0],
-              circular_arc_points[2*(Q - 1) - q][1])  # noqa: E127
+            (-circular_arc_points[T - 1 - q][0],
+              circular_arc_points[T - 1 - q][1])  # noqa: E127
 
     for t in range(T, C):
         circular_arc_points[t] = \
-            ( circular_arc_points[2*(T - 1) - t][0],  # noqa: E201
-             -circular_arc_points[2*(T - 1) - t][1])  # noqa: E128
+            ( circular_arc_points[C - t][0],  # noqa: E201
+             -circular_arc_points[C - t][1])  # noqa: E128
 
     return circular_arc_points
 
