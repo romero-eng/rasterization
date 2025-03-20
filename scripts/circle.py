@@ -11,20 +11,20 @@ def py_impl_circle(radius: int) -> np.ndarray[tuple[int, int], np.dtype[Any]]:
     N: int = int(np.floor(radius/np.sqrt(2)))
     tau: int = 4*np.square(radius) - 5
 
-    octant_1_points: np.ndarray[tuple[int, int], np.dtype[Any]] = np.empty((N + 1, 2), dtype=int)
-    octant_1_points[0] = (radius, 0)
+    first_octant_points: np.ndarray[tuple[int, int], np.dtype[Any]] = np.empty((N + 1, 2), dtype=int)
+    first_octant_points[0] = (radius, 0)
 
     decrement: bool
 
     for n in range(0, N):
 
-        decrement = 4*(np.square(octant_1_points[n][0]) - octant_1_points[n][0] + np.square(n) + 2*n) >= tau
+        decrement = 4*(np.square(first_octant_points[n][0]) - first_octant_points[n][0] + np.square(n) + 2*n) >= tau
 
-        octant_1_points[n + 1] = \
-            (octant_1_points[n][0] - (1 if decrement else 0),
-             octant_1_points[n][1] + 1)
+        first_octant_points[n + 1] = \
+            (first_octant_points[n][0] - (1 if decrement else 0),
+             first_octant_points[n][1] + 1)
 
-    M: int = N + (1 if octant_1_points[N][0] > octant_1_points[N][1] else 0)
+    M: int = N + (1 if first_octant_points[N][0] > first_octant_points[N][1] else 0)
     Q: int = N + 1 + M
     T: int = 2*Q - 1
     C: int = 2*(T - 1)
@@ -32,12 +32,12 @@ def py_impl_circle(radius: int) -> np.ndarray[tuple[int, int], np.dtype[Any]]:
     circular_arc_points: np.ndarray[tuple[int, int], np.dtype[Any]] = np.empty((C, 2), dtype=int)
 
     for n in range(0, N + 1):
-        circular_arc_points[n] = octant_1_points[n]
+        circular_arc_points[n] = first_octant_points[n]
 
     for m in range(N + 1, Q):
         circular_arc_points[m] = \
-            (octant_1_points[M - 1 - m][1],
-             octant_1_points[M - 1 - m][0])
+            (first_octant_points[M - 1 - m][1],
+             first_octant_points[M - 1 - m][0])
 
     for q in range(Q, T):
         circular_arc_points[q] = \
