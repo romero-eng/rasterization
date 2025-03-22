@@ -82,9 +82,27 @@ def compile_source_files(source_files: list[Path],
     return obj_files
 
 
-def link_object_files(object_files: list[Path],
-                      build_dir: Path,
-                      library_name: str) -> None:
+def build_executable(object_files: list[Path],
+                     build_dir: Path,
+                     executable_name: str) -> Path:
+
+    link_cmd: str = "g++ {object_files:} -o {executable:s}"
+
+    exe_path: Path = build_dir/executable_name
+
+    run_shell_command(f"Build {executable_name:s}",
+                      link_cmd.format(object_files=" ".join([str(file) for file in object_files]),
+                                      executable=str(exe_path)))
+
+    for file in object_files:
+        file.unlink()
+
+    return exe_path
+
+
+def dynamical_library_linking(object_files: list[Path],
+                              build_dir: Path,
+                              library_name: str) -> None:
 
     link_cmd: str = "g++ {object_files:s} -fPIC -shared -o {library:s}"
 
@@ -94,6 +112,28 @@ def link_object_files(object_files: list[Path],
 
     for file in object_files:
         file.unlink()
+
+
+def test_executable(source_files: list[Path],
+                    executable_name: str) -> None:
+
+    build_dir: Path = Path("build")
+    if (build_dir.exists()):
+        shutil.rmtree(build_dir)
+    build_dir.mkdir()
+
+    exe_path: Path = \
+        build_executable(compile_source_files(source_files,
+                                              build_dir),
+                         build_dir,
+                         f"{executable_name:s}.exe")
+
+    run_shell_command("Run executable",
+                      f"./{executable_name:s}.exe",
+                      build_dir)
+
+    exe_path.unlink()
+    build_dir.rmdir()
 
 
 def create_python_module(library_name: str,
@@ -114,14 +154,14 @@ def create_python_module(library_name: str,
     tmp_module_dir: Path = build_dir/library_name
     tmp_module_dir.mkdir()
 
-    link_object_files(compile_source_files(src_files,
-                                           build_dir) +
-                      compile_source_files(py_bindings,
-                                           build_dir,
-                                           [Path("/usr")/"include"/"python3.12"],
-                                           {"LIBRARY_NAME": library_name}),
-                      tmp_module_dir,
-                      library_name)
+    dynamical_library_linking(compile_source_files(src_files,
+                                                   build_dir) +
+                              compile_source_files(py_bindings,
+                                                   build_dir,
+                                                   [Path("/usr")/"include"/"python3.12"],
+                                                   {"LIBRARY_NAME": library_name}),
+                              tmp_module_dir,
+                              library_name)
 
     (tmp_module_dir/"py.typed").touch()
     for prototype_wrapper_script in prototype_wrapper_scripts:
@@ -140,6 +180,10 @@ if (__name__ == "__main__"):
     source_files: list[Path] = \
         [src_dir/"orig_algo_impl"/"Rasterization.cpp"]
 
+    test_executable(source_files,
+                    "Rasterization")
+
+    """
     py_bindings: list[Path] = \
         [src_dir/"python_bindings"/"Rasterizationmodule.cpp"]
 
@@ -151,3 +195,4 @@ if (__name__ == "__main__"):
                          source_files,
                          py_bindings,
                          module_proto_scripts)
+    """

@@ -130,6 +130,15 @@ std::vector<std::array<int, 2>> Rasterization::Line(const std::array<std::array<
 }
 
 
+int main()
+{
+
+    std::cout << "Hello World!" << std::endl;
+
+    return 0;
+}
+
+
 # else
 # error "This file is only meant to be compiled on a Linux OS"
 # endif

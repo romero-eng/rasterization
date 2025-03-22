@@ -4,6 +4,7 @@
 # include <cmath>
 # include <vector>
 # include <array>
+# include <iostream>  // Only included for testing purposes
 
 namespace Rasterization
 {
