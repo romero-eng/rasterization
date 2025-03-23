@@ -130,10 +130,72 @@ std::vector<std::array<int, 2>> Rasterization::Line(const std::array<std::array<
 }
 
 
+// Function only included for testing
+void print_pixels(const std::vector<std::array<int, 2>>& points)
+{
+    std::vector<std::string> points_as_strings (points.size());
+    std::transform(points.begin(),
+                   points.end(),
+                   points_as_strings.begin(),
+                   [](const std::array<int, 2>& point){ return fmt::format("({:d}, {:d})",
+                                                                           point[0],
+                                                                           point[1]); });
+    fmt::print("{:s}", fmt::join(points_as_strings, "\n"));
+}
+
+
 int main()
 {
 
-    std::cout << "Hello World!" << std::endl;
+    int radius {20};
+
+    std::size_t N {static_cast<std::size_t>(radius/std::sqrt(2)) + 1};
+    int tau {4*radius*radius - 5};
+
+    std::vector<std::array<int, 2>> first_octant_points (N);
+    first_octant_points[0] = {radius, 0};
+
+    bool decrement;
+    for (std::size_t n {0}; n < N - 1; n++) {
+
+        decrement = 4*(first_octant_points[n][0]*first_octant_points[n][0] - first_octant_points[n][0] + static_cast<int>(n*n) + 2*static_cast<int>(n)) >= tau;
+
+        first_octant_points[n + 1] = 
+           {first_octant_points[n][0] - (decrement ? 1 : 0),
+            first_octant_points[n][1] + 1}; 
+
+    }
+
+    std::size_t Q {2*N - (first_octant_points[N - 1][0] == first_octant_points[N - 1][1] ? 1 : 0)};
+    std::size_t T {2*Q - 1};
+    std::size_t C {2*(T - 1)};
+
+    std::vector<std::array<int, 2>> circular_arc_points (C);
+
+    for (std::size_t n {0}; n < N; n++) {
+        circular_arc_points[n] = first_octant_points[n];
+    }
+
+    for (std::size_t n {N}; n < Q; n++) {
+        circular_arc_points[n] =
+            {first_octant_points[Q - n - 1][1],
+             first_octant_points[Q - n - 1][0]};
+    }
+
+    for (std::size_t q {Q}; q < T; q++) {
+        circular_arc_points[q] =
+            {-circular_arc_points[T - 1 - q][0],
+              circular_arc_points[T - 1 - q][1]};
+    }
+
+    for (std::size_t t {T}; t < C; t++) {
+        circular_arc_points[t] =
+            { circular_arc_points[C - t][0],
+             -circular_arc_points[C - t][1]};
+    }
+
+    // print_pixels(first_octant_points);
+    print_pixels(circular_arc_points);
 
     return 0;
 }

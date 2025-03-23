@@ -5,6 +5,8 @@
 # include <vector>
 # include <array>
 # include <iostream>  // Only included for testing purposes
+# include <algorithm>  // Only included for testing purposes
+# include <fmt/format.h>  // Only included for testing purposes
 
 namespace Rasterization
 {
