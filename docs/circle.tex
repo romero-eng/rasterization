@@ -104,11 +104,10 @@ in the second octant. \\ \\
     \item \underline{Fill in other octants/quadrants} \\ \\
 
           \begin{align*}
-                M \equiv N - p, \quad p \equiv \begin{cases}
-                                                   1, \quad y[N - 1] = x[N - 1] \\ \\
-                                                   0, \quad y[N - 1] < x[N - 1]
-                                                 \end{cases} \\ \\
-                Q \equiv N + M \\ \\
+                Q \equiv 2*N - p, \quad p \equiv \begin{cases}
+                                                     1, \quad y[N - 1] = x[N - 1] \\ \\
+                                                     0, \quad y[N - 1] < x[N - 1]
+                                                   \end{cases} \\ \\
                 T \equiv 2*Q - 1 \\ \\
                 C \equiv 2*(T - 1) \\ \\
             \end{align*} 
@@ -118,17 +117,17 @@ in the second octant. \\ \\
                 &x_{f}[n] = x[n] \\ \\
                 &y_{f}[n] = y[n] \\ \\
               \end{align*}
-          \underline{for $m = N \rightarrow m = Q - 1$:} \\
+          \underline{for $n = N \rightarrow Q - 1$:} \\
             \begin{align*}
-                &x_{f}[m] = y[M - 1 - m] \\ \\
-                &y_{f}[m] = x[M - 1 - m] \\ \\
+                &x_{f}[m] = y[Q - n - 1] \\ \\
+                &y_{f}[m] = x[Q - n - 1] \\ \\
               \end{align*}
-          \underline{for $q = Q \rightarrow q = T - 1$:} \\
+          \underline{for $q = Q \rightarrow T - 1$:} \\
              \begin{align*}
                 &x_{f}[q] =    -x_{f}[T - 1 - q] \\ \\
                 &y_{f}[q] = \ \ y_{f}[T - 1 - q] \\ \\
                \end{align*}
-          \underline{for $t = T \rightarrow t = C - 1$:} \\
+          \underline{for $t = T \rightarrow C - 1$:} \\
              \begin{align*}
                 &x_{f}[t] = \ \ x_{f}[C - t] \\ \\
                 &y_{f}[t] =    -y_{f}[C - t] \\ \\

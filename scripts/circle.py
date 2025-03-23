@@ -24,8 +24,7 @@ def py_impl_circle(radius: int) -> np.ndarray[tuple[int, int], np.dtype[Any]]:
             (first_octant_points[n][0] - (1 if decrement else 0),
              first_octant_points[n][1] + 1)
 
-    M: int = N - (1 if first_octant_points[N - 1][0] == first_octant_points[N - 1][1] else 0)
-    Q: int = N + M
+    Q: int = 2*N - (1 if first_octant_points[N - 1][0] == first_octant_points[N - 1][1] else 0)
     T: int = 2*Q - 1
     C: int = 2*(T - 1)
 
@@ -34,10 +33,10 @@ def py_impl_circle(radius: int) -> np.ndarray[tuple[int, int], np.dtype[Any]]:
     for n in range(0, N):
         circular_arc_points[n] = first_octant_points[n]
 
-    for m in range(N, Q):
-        circular_arc_points[m] = \
-            (first_octant_points[M - 1 - m][1],
-             first_octant_points[M - 1 - m][0])
+    for n in range(N, Q):
+        circular_arc_points[n] = \
+            (first_octant_points[Q - n - 1][1],
+             first_octant_points[Q - n - 1][0])
 
     for q in range(Q, T):
         circular_arc_points[q] = \
@@ -71,11 +70,13 @@ def plot_circle_rasterization(radius: int,
 
     points: np.ndarray[tuple[int, int], np.dtype[Any]] = py_impl_circle(radius)
 
+    """
     for i in range(0, len(points)):
         print("({X: 2d}, {Y: 2d}), {angle:.2f}".format(X=points[i][0],
                                                        Y=points[i][1],
                                                        angle=(180/np.pi)*np.arctan2(points[i][1],
                                                                                     points[i][0])))
+    """
 
     for i in range(0, len(points) - 1):
         ax.plot([points[i][0], points[i + 1][0]],
@@ -91,6 +92,9 @@ def plot_circle_rasterization(radius: int,
     ax.set_title("Circle")
     ax.set_aspect("equal")
     ax.grid()
+
+    ax.axhline(0)
+    ax.axvline(0)
 
     fig.tight_layout()
 
