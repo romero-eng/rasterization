@@ -22,7 +22,7 @@ def py_impl_circle(radius: int) -> np.ndarray[tuple[int, int], np.dtype[Any]]:
 
         first_octant_points[n + 1] = \
             (first_octant_points[n][0] - (1 if decrement else 0),
-             first_octant_points[n][1] + 1) 
+             first_octant_points[n][1] + 1)
 
     M: int = N - (1 if first_octant_points[N - 1][0] == first_octant_points[N - 1][1] else 0)
     Q: int = N + M
