@@ -95,7 +95,7 @@ def build_executable(object_files: list[Path],
     run_shell_command(f"Build {executable_name:s}",
                       link_cmd.format(object_files=" ".join([str(file) for file in object_files]),
                                       executable=str(exe_path),
-                                      libraries=(" ".join([f"-l{library_name:s}" for library_name in library_names]) if library_names else "")))
+                                      libraries=(" ".join([f"-l{library_name:s}" for library_name in library_names]) if library_names else "")))  # noqa: E501
 
     for file in object_files:
         file.unlink()
