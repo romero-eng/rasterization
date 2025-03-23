@@ -2,6 +2,7 @@ import subprocess
 from pathlib import Path
 import site
 import shutil
+from typing import Optional
 
 
 def mapping_to_string(mapping_title: str,
@@ -84,15 +85,17 @@ def compile_source_files(source_files: list[Path],
 
 def build_executable(object_files: list[Path],
                      build_dir: Path,
-                     executable_name: str) -> Path:
+                     executable_name: str,
+                     library_names: Optional[list[str]] = None) -> Path:
 
-    link_cmd: str = "g++ {object_files:} -o {executable:s}"
+    link_cmd: str = "g++ {object_files:} -o {executable:s} {libraries:s}"
 
     exe_path: Path = build_dir/executable_name
 
     run_shell_command(f"Build {executable_name:s}",
                       link_cmd.format(object_files=" ".join([str(file) for file in object_files]),
-                                      executable=str(exe_path)))
+                                      executable=str(exe_path),
+                                      libraries=(" ".join([f"-l{library_name:s}" for library_name in library_names]) if library_names else "")))
 
     for file in object_files:
         file.unlink()
@@ -115,7 +118,8 @@ def dynamical_library_linking(object_files: list[Path],
 
 
 def test_executable(source_files: list[Path],
-                    executable_name: str) -> None:
+                    executable_name: str,
+                    library_names: Optional[list[str]] = None) -> None:
 
     build_dir: Path = Path("build")
     if (build_dir.exists()):
@@ -126,7 +130,8 @@ def test_executable(source_files: list[Path],
         build_executable(compile_source_files(source_files,
                                               build_dir),
                          build_dir,
-                         f"{executable_name:s}.exe")
+                         f"{executable_name:s}.exe",
+                         library_names)
 
     run_shell_command("Run executable",
                       f"./{executable_name:s}.exe",
@@ -181,7 +186,8 @@ if (__name__ == "__main__"):
         [src_dir/"orig_algo_impl"/"Rasterization.cpp"]
 
     test_executable(source_files,
-                    "Rasterization")
+                    "Rasterization",
+                    ["fmt"])
 
     """
     py_bindings: list[Path] = \
