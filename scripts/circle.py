@@ -70,13 +70,11 @@ def plot_circle_rasterization(radius: int,
 
     points: np.ndarray[tuple[int, int], np.dtype[Any]] = py_impl_circle(radius)
 
-    """
     for i in range(0, len(points)):
         print("({X: 2d}, {Y: 2d}), {angle:.2f}".format(X=points[i][0],
                                                        Y=points[i][1],
                                                        angle=(180/np.pi)*np.arctan2(points[i][1],
                                                                                     points[i][0])))
-    """
 
     for i in range(0, len(points) - 1):
         ax.plot([points[i][0], points[i + 1][0]],
