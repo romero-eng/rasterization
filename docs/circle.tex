@@ -87,6 +87,12 @@ in the second octant. \\ \\
 
 \underline{\textbf{Final Rasterization Algorithm:}} \\
 \begin{enumerate}
+    \item \underline{Start off with inputted values:} \\
+          \begin{align*}
+                &x_c \equiv \text{x-coordinate of circle center} \\ \\
+                &y_c \equiv \text{y-coordinate of circle center} \\ \\
+                &r \equiv \text{radius of circle} \\
+            \end{align*}
     \item \underline{Set Initial Values:} 
           \begin{align*}
                 &x[0] = r, \quad y[0] = 0 \\ \\
@@ -101,37 +107,61 @@ in the second octant. \\ \\
                                                      1 \ , \quad 4\Big(x^{2}[n] - x[n] + n^{2} + 2n\Big) \geq \tau
                                                    \end{cases}
           \end{align*}
-    \item \underline{Fill in other octants/quadrants} \\ \\
+    \item \underline{Fill in other octants/quadrants} \\
+        \begin{align*}
+            &O = \begin{cases}
+                      1, \quad x[N - 1] = y[N - 1] \\ \\
+                      0, \quad x[N - 1] \not= y[N -1] 
+                    \end{cases} \\ \\
+            &M = N - O \\ \\
+            &Q = 2*N - 1 - O \\ \\
+            &x_{i} \equiv \text{x-coordinate in }\text{i}^{\text{th}}\text{ octant} \\ \\
+            &y_{i} \equiv \text{y-coordinate in }\text{i}^{\text{th}}\text{ octant}
+          \end{align*}
 
-          \begin{align*}
-                Q \equiv 2*N - p, \quad p \equiv \begin{cases}
-                                                     1, \quad y[N - 1] = x[N - 1] \\ \\
-                                                     0, \quad y[N - 1] < x[N - 1]
-                                                   \end{cases} \\ \\
-                T \equiv 2*Q - 1 \\ \\
-                C \equiv 2*(T - 1) \\ \\
-            \end{align*} 
+        \begin{align*}
+            &\ x_{1}[0] = \ \ \ x[0] + x_c \\
+            &\ y_{1}[0] = \ \ \ y[0] + y_c \\ \\
+            &\ x_{2}[Q] = \ \ \ y[0] + x_c \\
+            &\ y_{2}[Q] = \ \ \ x[0] + y_c \\ \\
+            &x_{4}[2Q] = -x[0] + x_c \\
+            &y_{4}[2Q] = \ \ \ y[0] + y_c \\ \\
+            &x_{6}[3Q] = -x[0] + x_c \\
+            &y_{6}[3Q] = -y[0] + y_c \\ \\
+          \end{align*}
 
-          \underline{for $n = 0 \rightarrow N - 1$:} \\
-            \begin{align*}
-                &x_{f}[n] = x[n] \\ \\
-                &y_{f}[n] = y[n] \\ \\
-              \end{align*}
-          \underline{for $n = N \rightarrow Q - 1$:} \\
-            \begin{align*}
-                &x_{f}[m] = y[Q - n - 1] \\ \\
-                &y_{f}[m] = x[Q - n - 1] \\ \\
-              \end{align*}
-          \underline{for $q = Q \rightarrow T - 1$:} \\
-             \begin{align*}
-                &x_{f}[q] =    -x_{f}[T - 1 - q] \\ \\
-                &y_{f}[q] = \ \ y_{f}[T - 1 - q] \\ \\
-               \end{align*}
-          \underline{for $t = T \rightarrow C - 1$:} \\
-             \begin{align*}
-                &x_{f}[t] = \ \ x_{f}[C - t] \\ \\
-                &y_{f}[t] =    -y_{f}[C - t] \\ \\
-               \end{align*}
+        \underline{if $O == 1$}
+        \begin{align*}
+            &\quad \quad \quad \ x_{1}[N - 1] = \ \ x[N - 1] + x_c \\
+            &\quad \quad \quad \ y_{1}[N - 1] = \ \ \ y[N - 1] + y_c \\ \\
+            &x_{3}[2Q - (N - 1)] = -x[N - 1] + x_c \\
+            &y_{3}[2Q - (N - 1)] = \ \ \ y[N - 1] + y_c \\ \\
+            &x_{5}[2Q + (N - 1)] = -x[N - 1] + x_c \\
+            &y_{5}[2Q + (N - 1)] = -y[N - 1] + y_c \\ \\
+            &x_{7}[4Q - (N - 1)] = \ \ x[N - 1] + x_c \\
+            &y_{7}[4Q - (N - 1)] = -y[N - 1] + y_c \\ \\
+          \end{align*}
+
+        \underline{for $m = 1 \rightarrow M - 1$:} \\
+        \begin{align*}
+            &\quad \quad \ x_{1}[m] = \ \ x[m] + x_c \\ 
+            &\quad \quad \ y_{1}[m] = \ \ y[m] + y_c \\ \\
+            &\ x_{2}[Q - m] = \ \ y[m] + x_c \\
+            &\ y_{2}[Q - m] = \ \ x[m] + y_c \\ \\
+            &\ x_{3}[Q + m] = -y[m] + x_c \\
+            &\ y_{3}[Q + m] = \ \ x[m] + y_c \\ \\
+            &x_{4}[2Q - m] = -x[m] + x_c \\
+            &y_{4}[2Q - m] = \ \ y[m] + y_c \\ \\
+            &x_{5}[2Q + m] = -x[m] + x_c \\
+            &y_{5}[2Q + m] = -y[m] + y_c \\ \\
+            &x_{6}[3Q - m] = -y[m] + x_c \\
+            &y_{6}[3Q - m] = -y[m] + y_c \\ \\
+            &x_{7}[3Q + m] = \ \ y[m] + x_c \\
+            &y_{7}[3Q + m] = -x[m] + y_c \\ \\
+            &x_{8}[4Q - m] = \ \ x[m] + x_c \\
+            &y_{8}[4Q - m] = -y[m] + y_c \\ \\
+          \end{align*}
+
 \end{enumerate}
 
 \end{document}
