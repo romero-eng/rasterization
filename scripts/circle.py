@@ -51,7 +51,7 @@ def py_impl_circle(radius: int,
         (-first_octant_points[0][1] + center[0],
          -first_octant_points[0][0] + center[1])
 
-    if overflow:
+    if overflow == 1:
 
         # Upper-left diagonal point
         points[N - 1] = \
@@ -90,6 +90,7 @@ def py_impl_circle(radius: int,
         points[Q + m] = \
             (-first_octant_points[m][1] + center[0],
               first_octant_points[m][0] + center[1])
+
         # Fourth Octant
         points[2*Q - m] = \
             (-first_octant_points[m][0] + center[0],
