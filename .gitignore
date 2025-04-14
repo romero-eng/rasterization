@@ -173,8 +173,7 @@ cython_debug/
 # PyPI configuration file
 .pypirc
 
-# Vim configuration file and views
-.vimrc
+# Vim views
 /view
 
 # LateX files
