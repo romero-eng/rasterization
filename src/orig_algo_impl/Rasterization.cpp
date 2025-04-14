@@ -147,6 +147,8 @@ void print_pixels(const std::vector<std::array<int, 2>>& points)
 int main()
 {
 
+    int x_c {0};
+    int y_c {0};
     int radius {20};
 
     std::size_t N {static_cast<std::size_t>(radius/std::sqrt(2)) + 1};
@@ -166,32 +168,82 @@ int main()
 
     }
 
-    std::size_t Q {2*N - (first_octant_points[N - 1][0] == first_octant_points[N - 1][1] ? 1 : 0)};
-    std::size_t T {2*Q - 1};
-    std::size_t C {2*(T - 1)};
+    std::size_t overflow {static_cast<std::size_t>(first_octant_points[N - 1][0] == first_octant_points[N - 1][1] ? 1 : 0)};
+    std::size_t M {N - overflow};
+    std::size_t Q {2*N - 1 - overflow};
 
-    std::vector<std::array<int, 2>> circular_arc_points (C);
+    std::vector<std::array<int, 2>> circular_arc_points (4*Q);
 
-    for (std::size_t n {0}; n < N; n++) {
-        circular_arc_points[n] = first_octant_points[n];
+    circular_arc_points[0] = \
+        {first_octant_points[0][0] + x_c,
+         first_octant_points[0][1] + y_c};
+
+    circular_arc_points[Q] = \
+        {first_octant_points[0][1] + x_c,
+         first_octant_points[0][0] + y_c};
+
+    circular_arc_points[2*Q] = \
+        {-first_octant_points[0][0] + x_c,
+          first_octant_points[0][1] + y_c};
+
+    circular_arc_points[3*Q] = \
+        {-first_octant_points[0][1] + x_c,
+         -first_octant_points[0][0] + y_c};
+
+    if (overflow == 1) {
+        
+        circular_arc_points[N - 1] = \
+            {first_octant_points[N - 1][0] + x_c,
+             first_octant_points[N - 1][1] + y_c};
+
+        circular_arc_points[2*Q - (N - 1)] = \
+            {-first_octant_points[N - 1][0] + x_c,
+              first_octant_points[N - 1][1] + y_c};
+
+        circular_arc_points[2*Q + (N - 1)] = \
+            {-first_octant_points[N - 1][0] + x_c,
+             -first_octant_points[N - 1][1] + y_c};
+
+        circular_arc_points[4*Q - (N - 1)] = \
+            { first_octant_points[N - 1][0] + x_c,
+             -first_octant_points[N - 1][1] + y_c};
+
     }
 
-    for (std::size_t n {N}; n < Q; n++) {
-        circular_arc_points[n] =
-            {first_octant_points[Q - n - 1][1],
-             first_octant_points[Q - n - 1][0]};
-    }
+    for (std::size_t m {1}; m < M; m++) {
+        
+        circular_arc_points[m] = \
+            {first_octant_points[m][0] + x_c,
+             first_octant_points[m][1] + y_c};
 
-    for (std::size_t q {Q}; q < T; q++) {
-        circular_arc_points[q] =
-            {-circular_arc_points[T - 1 - q][0],
-              circular_arc_points[T - 1 - q][1]};
-    }
+        circular_arc_points[Q - m] = \
+            {first_octant_points[m][1] + x_c,
+             first_octant_points[m][0] + y_c};
 
-    for (std::size_t t {T}; t < C; t++) {
-        circular_arc_points[t] =
-            { circular_arc_points[C - t][0],
-             -circular_arc_points[C - t][1]};
+        circular_arc_points[Q + m] = \
+            {-first_octant_points[m][1] + x_c,
+              first_octant_points[m][0] + y_c};
+
+        circular_arc_points[2*Q - m] = \
+            {-first_octant_points[m][0] + x_c,
+              first_octant_points[m][1] + y_c};
+
+        circular_arc_points[2*Q + m] = \
+            {-first_octant_points[m][0] + x_c,
+             -first_octant_points[m][1] + y_c};
+
+        circular_arc_points[3*Q - m] = \
+            {-first_octant_points[m][1] + x_c,
+             -first_octant_points[m][0] + y_c};
+
+        circular_arc_points[3*Q + m] = \
+            { first_octant_points[m][1] + x_c,
+             -first_octant_points[m][0] + y_c};
+
+        circular_arc_points[4*Q - m] = \
+            { first_octant_points[m][0] + x_c,
+             -first_octant_points[m][1] + y_c};
+
     }
 
     // print_pixels(first_octant_points);
