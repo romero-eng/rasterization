@@ -130,27 +130,9 @@ std::vector<std::array<int, 2>> Rasterization::Line(const std::array<std::array<
 }
 
 
-// Function only included for testing
-void print_pixels(const std::vector<std::array<int, 2>>& points)
+std::vector<std::array<int, 2>> Circle(int radius,
+                                       const std::array<int, 2>& center)
 {
-    std::vector<std::string> points_as_strings (points.size());
-    std::transform(points.begin(),
-                   points.end(),
-                   points_as_strings.begin(),
-                   [](const std::array<int, 2>& point){ return fmt::format("({:d}, {:d})",
-                                                                           point[0],
-                                                                           point[1]); });
-    fmt::print("{:s}", fmt::join(points_as_strings, "\n"));
-}
-
-
-int main()
-{
-
-    int x_c {0};
-    int y_c {0};
-    int radius {20};
-
     std::size_t N {static_cast<std::size_t>(radius/std::sqrt(2)) + 1};
     int tau {4*radius*radius - 5};
 
@@ -175,79 +157,97 @@ int main()
     std::vector<std::array<int, 2>> circular_arc_points (4*Q);
 
     circular_arc_points[0] = \
-        {first_octant_points[0][0] + x_c,
-         first_octant_points[0][1] + y_c};
+        {first_octant_points[0][0] + center[0],
+         first_octant_points[0][1] + center[1]};
 
     circular_arc_points[Q] = \
-        {first_octant_points[0][1] + x_c,
-         first_octant_points[0][0] + y_c};
+        {first_octant_points[0][1] + center[0],
+         first_octant_points[0][0] + center[1]};
 
     circular_arc_points[2*Q] = \
-        {-first_octant_points[0][0] + x_c,
-          first_octant_points[0][1] + y_c};
+        {-first_octant_points[0][0] + center[0],
+          first_octant_points[0][1] + center[1]};
 
     circular_arc_points[3*Q] = \
-        {-first_octant_points[0][1] + x_c,
-         -first_octant_points[0][0] + y_c};
+        {-first_octant_points[0][1] + center[0],
+         -first_octant_points[0][0] + center[1]};
 
     if (overflow == 1) {
         
         circular_arc_points[N - 1] = \
-            {first_octant_points[N - 1][0] + x_c,
-             first_octant_points[N - 1][1] + y_c};
+            {first_octant_points[N - 1][0] + center[0],
+             first_octant_points[N - 1][1] + center[1]};
 
         circular_arc_points[2*Q - (N - 1)] = \
-            {-first_octant_points[N - 1][0] + x_c,
-              first_octant_points[N - 1][1] + y_c};
+            {-first_octant_points[N - 1][0] + center[0],
+              first_octant_points[N - 1][1] + center[1]};
 
         circular_arc_points[2*Q + (N - 1)] = \
-            {-first_octant_points[N - 1][0] + x_c,
-             -first_octant_points[N - 1][1] + y_c};
+            {-first_octant_points[N - 1][0] + center[0],
+             -first_octant_points[N - 1][1] + center[1]};
 
         circular_arc_points[4*Q - (N - 1)] = \
-            { first_octant_points[N - 1][0] + x_c,
-             -first_octant_points[N - 1][1] + y_c};
+            { first_octant_points[N - 1][0] + center[0],
+             -first_octant_points[N - 1][1] + center[1]};
 
     }
 
     for (std::size_t m {1}; m < M; m++) {
         
         circular_arc_points[m] = \
-            {first_octant_points[m][0] + x_c,
-             first_octant_points[m][1] + y_c};
+            {first_octant_points[m][0] + center[0],
+             first_octant_points[m][1] + center[1]};
 
         circular_arc_points[Q - m] = \
-            {first_octant_points[m][1] + x_c,
-             first_octant_points[m][0] + y_c};
+            {first_octant_points[m][1] + center[0],
+             first_octant_points[m][0] + center[1]};
 
         circular_arc_points[Q + m] = \
-            {-first_octant_points[m][1] + x_c,
-              first_octant_points[m][0] + y_c};
+            {-first_octant_points[m][1] + center[0],
+              first_octant_points[m][0] + center[1]};
 
         circular_arc_points[2*Q - m] = \
-            {-first_octant_points[m][0] + x_c,
-              first_octant_points[m][1] + y_c};
+            {-first_octant_points[m][0] + center[0],
+              first_octant_points[m][1] + center[1]};
 
         circular_arc_points[2*Q + m] = \
-            {-first_octant_points[m][0] + x_c,
-             -first_octant_points[m][1] + y_c};
+            {-first_octant_points[m][0] + center[0],
+             -first_octant_points[m][1] + center[1]};
 
         circular_arc_points[3*Q - m] = \
-            {-first_octant_points[m][1] + x_c,
-             -first_octant_points[m][0] + y_c};
+            {-first_octant_points[m][1] + center[0],
+             -first_octant_points[m][0] + center[1]};
 
         circular_arc_points[3*Q + m] = \
-            { first_octant_points[m][1] + x_c,
-             -first_octant_points[m][0] + y_c};
+            { first_octant_points[m][1] + center[0],
+             -first_octant_points[m][0] + center[1]};
 
         circular_arc_points[4*Q - m] = \
-            { first_octant_points[m][0] + x_c,
-             -first_octant_points[m][1] + y_c};
-
+            { first_octant_points[m][0] + center[0],
+             -first_octant_points[m][1] + center[1]};
     }
 
-    // print_pixels(first_octant_points);
-    print_pixels(circular_arc_points);
+    return circular_arc_points;
+} 
+ 
+
+// Function only included for testing
+void print_pixels(const std::vector<std::array<int, 2>>& points)
+{
+    std::vector<std::string> points_as_strings (points.size());
+    std::transform(points.begin(),
+                   points.end(),
+                   points_as_strings.begin(),
+                   [](const std::array<int, 2>& point){ return fmt::format("({:d}, {:d})",
+                                                                           point[0],
+                                                                           point[1]); });
+    fmt::print("{:s}", fmt::join(points_as_strings, "\n"));
+}
+
+
+int main()
+{
+    print_pixels(Circle(20, {30, 40}));
 
     return 0;
 }
