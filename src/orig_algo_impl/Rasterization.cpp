@@ -130,8 +130,8 @@ std::vector<std::array<int, 2>> Rasterization::Line(const std::array<std::array<
 }
 
 
-std::vector<std::array<int, 2>> Circle(int radius,
-                                       const std::array<int, 2>& center)
+std::vector<std::array<int, 2>> Rasterization::Circle(int radius,
+                                                      const std::array<int, 2>& center)
 {
     std::size_t N {static_cast<std::size_t>(radius/std::sqrt(2)) + 1};
     int tau {4*radius*radius - 5};
@@ -247,7 +247,7 @@ void print_pixels(const std::vector<std::array<int, 2>>& points)
 
 int main()
 {
-    print_pixels(Circle(20, {30, 40}));
+    print_pixels(Rasterization::Circle(20, {30, 40}));
 
     return 0;
 }
