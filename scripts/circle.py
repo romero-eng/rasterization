@@ -170,8 +170,6 @@ def plot_circle_rasterization(radius: int,
     os.remove("circle.png")
 
 
-
-
 if (__name__ == "__main__"):
 
     parser = \
