@@ -1,8 +1,9 @@
-import subprocess
-from pathlib import Path
+import copy
 import site
 import shutil
-from typing import Optional
+import subprocess
+from enum import IntEnum
+from pathlib import Path
 
 
 def mapping_to_string(mapping_title: str,
@@ -44,113 +45,313 @@ def run_shell_command(description: str,
         raise Exception(f'\n{printable_shell_results:s}')
 
 
-def compile_source_files(source_files: list[Path],
-                         build_dir: Path,
-                         include_dirs: list[Path] = [],
-                         preprocessor_macros: dict[str, str] = {}) -> list[Path]:
+class Optimization(IntEnum):
 
-    warnings: list[str] = ["all", "extra", "effc++", "conversion", "sign-conversion"]
-
-    language_standard_flags: list[str] = ["std=c++2b"]
-    build_configuration_flags: list[str] = ["O2", "DNDEBUG"]
-    include_flags: list[str] = [f"I {str(include_dir):s}" for include_dir in include_dirs]
-    warning_flags: list[str] = ["pedantic-errors"] + [f"W{flag:s}" for flag in warnings]
-    preprocessor_flags: list[str] = [f"D{macro:s}=\\\"{value:s}\\\"" for macro, value in preprocessor_macros.items()]
-
-    flags: list[str] = \
-        language_standard_flags + \
-        build_configuration_flags + \
-        include_flags + \
-        warning_flags + \
-        preprocessor_flags
-
-    compile_cmd: str = "g++ -c {source_file:s} -o {object_file:s} {flags:s}"
-
-    obj_file: Path
-    obj_files: list[Path] = []
-
-    for src_file in source_files:
-
-        obj_file = build_dir/f"{src_file.stem:s}.o"
-
-        run_shell_command(f"Compile {src_file.name:s}",
-                          compile_cmd.format(source_file=str(src_file),
-                                             object_file=str(obj_file),
-                                             flags=" ".join([f"-{flag:s}" for flag in flags])))
-
-        obj_files.append(obj_file)
-
-    return obj_files
+    NONE = 0
+    SOME = 1
+    RECOMMENDED = 2
+    AGGRESSIVE = 3
 
 
-def build_executable(object_files: list[Path],
+class Batch:
+
+    _cpp_versions = ["0x", "1y", "1z", "2a", "2b"]
+
+
+    def __init__(self, src_dir: Path):
+
+        self._src_dir = src_dir
+        self._include_dirs: set[Path] = set() 
+        self._preprocessor_macros: dict[str, str | None] = {}
+        self._library_names: set[Path] = set()
+
+        self.set_version_year(2023)
+        self.enable_low_level_assembly_debugging(False)
+        self.set_optimization_level(Optimization.RECOMMENDED)
+        self.remove_assert_statements(True)
+        self.disable_compiler_extensions(True)
+        self.enable_position_independence(False)
+        self.treat_warnings_as_errors(True)
+        self.warn_about_questionable_coding_practices(True)
+        self.warn_about_some_extra_questionable_coding_practices(True)
+        self.warn_about_not_following_effective_cpp_guidelines(True) 
+        self.warn_about_implicit_value_changing_conversions(True)
+        self.warn_about_implicit_integer_sign_change_conversions(True)
+
+    @property
+    def src_dir(self) -> Path:
+     
+       return self._src_dir
+
+    def add_include_directory(self, directory: Path) -> None:
+
+        self._include_dirs.add(directory)
+
+    def remove_include_directory(self, directory: Path) -> None:
+
+        self._include_dirs.discard(directory)
+
+    def add_preprocessor_macro(self, macro: str, value: str | None) -> None:
+
+        if macro not in self._preprocessor_macros:
+            self._preprocessor_macros |= {macro: value}
+        else:
+            raise Exception("{macro:s} is already a preprocessor macro")
+
+    def change_preprocessor_macro_value(self, macro: str, new_value: str | None) -> None:
+
+        if macro in self._preprocessor_macros:
+            self._preprocessor_macros.update(macro, new_value)
+        else:
+            raise Exception("{macro:s} is not a known preprocessor macro")
+
+    def remove_preprocessor_macro(self, macro: str) -> None:
+
+        if macro in self._preprocessor_macros:
+            del self._preprocessor_macros[macro]
+        else:
+            raise Exception("{macro:s} is not a known preprocessor macro")
+
+    def add_library_name(self, library_name: str) -> None:
+
+        self._library_names.add(library_name)
+
+    def remove_library_name(self, library_name: str) -> None:
+
+        self._library_names.discard(library_name)
+
+    def yield_library_names(self) -> set[Path]:
+
+        return copy.deepcopy(self._library_names)
+
+    def set_version_year(self, version_year: int) -> None:
+
+        if ((version_year - 2011 < 0) and ((version_year - 2011) % 3 != 0)):
+            raise ValueError("{version_year:4d} is not a valid version of C++")
+
+        self._version_year = version_year
+
+    def enable_low_level_assembly_debugging(self, decision: bool) -> None:
+
+        if hasattr(self, "_remove_asserts"):
+            if self._remove_asserts and decision:
+                print("Warning: removing assert statements is not recommended when low-level assembly debugging is enabled")
+
+        if hasattr(self, "_optimization_level"):
+            if self._optimization_level is not Optimization.NONE and decision:
+                print("Warning: enabling optimizations will result in discrepancies between assembly code and C\\C++ source code.")
+
+        self._assembly_debugging = decision
+
+    def set_optimization_level(self, level: Optimization) -> None:
+
+        if hasattr(self, "_assembly_debugging"):
+            if self._assembly_debugging and level is not Optimization.NONE:
+                print("Warning: enabling optimizations will result in discrepancies between assembly code and C\\C++ source code.")
+
+        self._optimization_level = level
+
+    def remove_assert_statements(self, decision: bool) -> None:
+ 
+        if hasattr(self, "_assembly_debbugging"):
+            if self._assembly_debugging and decision:
+                print("Warning: removing assert statements is not recommended when low-level assembly debugging is enabled")       
+
+        self._remove_asserts = decision
+
+    def enable_position_independence(self, decision: bool) -> None:
+
+        self._position_independence = decision
+
+    def treat_warnings_as_errors(self, decision: bool) -> None:
+
+        self._warnings_as_errors = decision
+
+    def warn_about_questionable_coding_practices(self, decision: bool) -> None:
+        
+        self._warn_about_questionable_coding_practices = decision
+
+    def warn_about_some_extra_questionable_coding_practices(self, decision: bool) -> None:
+
+        self._warn_about_some_extra_questionable_coding_practices = decision
+
+    def warn_about_not_following_effective_cpp_guidelines(self, decision: bool) -> None:
+
+        self._warn_about_not_following_effective_cpp_guidelines = decision
+
+    def warn_about_implicit_value_changing_conversions(self, decision: bool) -> None:
+
+        self._warn_about_implicit_value_changing_conversions = decision
+
+    def warn_about_implicit_integer_sign_change_conversions(self, decision: bool) -> None:
+
+        self._warn_about_implicit_integer_sign_change_conversions = decision
+
+    def disable_compiler_extensions(self, decision: bool) -> None:
+
+        self._disable_compiler_extensions = decision
+
+    def _yield_formatted_flags(self) -> str:
+
+        general_compilation_template: str = "g++ -c {{source_file:s}} -o {{object_file:s}} {flags:s}"
+
+        main_decisions: dict[str, str | None] = \
+            {                           "std" : f"c++{self.__class__._cpp_versions[int((self._version_year - 2011)/3)]:2s}",
+             f"O{self._optimization_level:d}" : None}
+
+        if self._disable_compiler_extensions:
+            main_decisions |= {"pedantic-errors" : None}
+
+        if self._position_independence:
+            main_decisions |= {"fPIC" : None}
+
+        preprocessor_macros: dict[str, str | None] = copy.deepcopy(self._preprocessor_macros)
+
+        if self._remove_asserts:
+            preprocessor_macros |= {"NDEBUG": None}
+
+        warnings: list[str] = []
+
+        if self._warnings_as_errors:
+            warnings.append("error")
+
+        if self._warn_about_questionable_coding_practices:
+            warnings.append("all")
+
+        if self._warn_about_some_extra_questionable_coding_practices:
+            warnings.append("extra")
+
+        if self._warn_about_not_following_effective_cpp_guidelines:
+            warnings.append("effc++")
+
+        if self._warn_about_implicit_value_changing_conversions:
+            warnings.append("conversion")
+
+        if self._warn_about_implicit_integer_sign_change_conversions:
+            warnings.append("sign-conversion")
+
+        flags: list[str] = \
+            [f"{flag:s}={value:s}" if value is not None else f"{flag:s}" for flag, value in main_decisions.items()] + \
+            [f"D{macro:s}=\\\"{value:s}\\\"" if value is not None else f"D{macro:s}" for macro, value in preprocessor_macros.items()] + \
+            [f"I {str(include_dir):s}" for include_dir in self._include_dirs] + \
+            [f"W{flag:s}" for flag in warnings]
+
+        return " ".join([f"-{flag:s}" for flag in flags])
+
+    def compile(self, build_dir: Path) -> list[Path]:
+
+        general_compilation_template: str = "g++ -c {{source_file:s}} -o {{object_file:s}} {flags:s}"
+
+        compilation_template: str = \
+            general_compilation_template.format(flags=self._yield_formatted_flags())
+
+        obj_file: Path
+        obj_files: list[Path] = []
+
+        if not build_dir.exists():
+            build_dir.mkdir()
+
+        for root, _, src_files in self._src_dir.walk():
+           for src_file in [root/file for file in src_files]:
+               if src_file.suffix == ".cpp":
+
+                   obj_file = (build_dir/src_file.name).with_suffix(".o")
+                   obj_files.append(obj_file) 
+
+                   run_shell_command(f"Compile {src_file.name:s}",
+                                     compilation_template.format(source_file=str(src_file),
+                                                                 object_file=str(obj_file)))
+
+        return obj_files
+
+
+def build(batches: list[Batch],
+          build_dir: Path,
+          description: str,
+          template: str,
+          library_names: list[str] | None = None) -> None:
+
+    obj_files: list[Path] = [obj_file for batch in batches for obj_file in batch.compile(build_dir)]   
+
+    formatted_library_names: str = " ".join([f"-l{library_name:s}" for library_name in library_names])
+
+    run_shell_command("Build Executable",
+                      template.format(object_files=" ".join([str(file.relative_to(build_dir)) for file in obj_files]),
+                                      library_names=formatted_library_names),
+                      shell_path=build_dir)
+
+    for file in obj_files:
+        file.unlink()
+
+
+def build_executable(batches: list[Batch],
                      build_dir: Path,
                      executable_name: str,
-                     library_names: Optional[list[str]] = None) -> Path:
+                     library_names: list[str] | None = None) -> None:
 
-    link_cmd: str = "g++ {object_files:} -o {executable:s} {libraries:s}"
+    linking_template: str = "g++ {{object_files:s}} -o {executable:s}.exe {{library_names:s}}"
 
-    exe_path: Path = build_dir/executable_name
-
-    run_shell_command(f"Build {executable_name:s}",
-                      link_cmd.format(object_files=" ".join([str(file) for file in object_files]),
-                                      executable=str(exe_path),
-                                      libraries=(" ".join([f"-l{library_name:s}" for library_name in library_names]) if library_names else "")))  # noqa: E501
-
-    for file in object_files:
-        file.unlink()
-
-    return exe_path
+    build(batches,
+          build_dir,
+          "Build Executable",
+          linking_template.format(executable=executable_name),
+          library_names)
 
 
-def dynamical_library_linking(object_files: list[Path],
-                              build_dir: Path,
-                              library_name: str) -> None:
+def build_dynamic_library(batches: list[Batch],
+                          build_dir: Path,
+                          library_to_be_built: str,
+                          previous_library_names: list[str] | None = None) -> None:
 
-    link_cmd: str = "g++ {object_files:s} -fPIC -shared -o {library:s}"
+    linking_template: str = "g++ {{object_files:s}} -shared -o {current_library:s}.so {{library_names:s}}"
 
-    run_shell_command(f"Dynamically Link into {library_name:s} module",
-                      link_cmd.format(object_files=" ".join([str(file) for file in object_files]),
-                                      library=str(build_dir/f"{library_name:s}.so")))
+    for batch in batches:
+        batch.enable_position_independence(True)
 
-    for file in object_files:
-        file.unlink()
+    build(batches,
+          build_dir,
+          f"Dynamically Link into {library_to_be_built:s} Library",
+          linking_template.format(current_library=library_to_be_built),
+          library_names)
 
 
-def test_executable(source_files: list[Path],
-                    executable_name: str,
-                    library_names: Optional[list[str]] = None) -> None:
+def build_and_test_executable(batches: list[Batch],
+                              executable_name: str,
+                              library_names: list[str] | None = None) -> None:
 
-    build_dir: Path = Path("build")
-    if (build_dir.exists()):
-        shutil.rmtree(build_dir)
-    build_dir.mkdir()
+    build_dir: Path = Path.cwd()/"build"
 
-    exe_path: Path = \
-        build_executable(compile_source_files(source_files,
-                                              build_dir),
-                         build_dir,
-                         f"{executable_name:s}.exe",
-                         library_names)
+    build_executable(batches,
+                     build_dir,
+                     executable_name,
+                     library_names)
 
-    run_shell_command("Run executable",
+    run_shell_command("Run Executable",
                       f"./{executable_name:s}.exe",
                       build_dir)
 
-    exe_path.unlink()
-    build_dir.rmdir()
+    shutil.rmtree(build_dir)
 
 
-def create_python_module(library_name: str,
+def create_python_module(batches: list[Batch],
+                         library_name: str,
                          module_name: str,
-                         src_files: list[Path],
-                         py_bindings: list[Path],
-                         prototype_wrapper_scripts: list[Path]) -> None:
+                         py_bindings_dir: Path,
+                         prototype_wrapper_scripts: list[Path],
+                         previous_libraries: list[str] | None = None) -> None:
 
     build_dir: Path = Path("build")
-    if (build_dir.exists()):
-        shutil.rmtree(build_dir)
-    build_dir.mkdir()
+
+    pybind_batch: Batch = Batch(py_bindings_dir)
+    pybind_batch.add_include_directory(Path("/usr")/"include"/"python3.12")
+    pybind_batch.add_preprocessor_macro("LIBRARY_NAME", library_name)
+
+    batches.append(pybind_batch)
+
+    build_dynamic_library(batches,
+                          build_dir,
+                          library_name,
+                          previous_libraries)
 
     module_dir: Path = [tmp_path for tmp_path in [Path(tmp_path) for tmp_path in site.getsitepackages()] if tmp_path.name == "site-packages"][0]/module_name  # noqa: E501
     if (module_dir.exists()):
@@ -159,14 +360,7 @@ def create_python_module(library_name: str,
     tmp_module_dir: Path = build_dir/library_name
     tmp_module_dir.mkdir()
 
-    dynamical_library_linking(compile_source_files(src_files,
-                                                   build_dir) +
-                              compile_source_files(py_bindings,
-                                                   build_dir,
-                                                   [Path("/usr")/"include"/"python3.12"],
-                                                   {"LIBRARY_NAME": library_name}),
-                              tmp_module_dir,
-                              library_name)
+    shutil.move(build_dir/f"{library_name:s}.so", tmp_module_dir)
 
     (tmp_module_dir/"py.typed").touch()
     for prototype_wrapper_script in prototype_wrapper_scripts:
@@ -182,23 +376,20 @@ if (__name__ == "__main__"):
 
     src_dir: Path = Path("src")
 
-    source_files: list[Path] = \
-        [src_dir/"orig_algo_impl"/"Rasterization.cpp"]
+    orig_algo_impl_batch: Path = Batch(src_dir/"orig_algo_impl")
+    orig_algo_impl_batch.add_library_name("fmt")
 
-    test_executable(source_files,
-                    "Rasterization",
-                    ["fmt"])
-
+    #"""
+    build_and_test_executable([orig_algo_impl_batch],
+                              "Rasterization",
+                              ["fmt"])
     """
-    py_bindings: list[Path] = \
-        [src_dir/"python_bindings"/"Rasterizationmodule.cpp"]
+    py_bindings_dir: Path = src_dir/"python_bindings"
 
-    module_proto_scripts: list[Path] = \
-        [src_dir/"python_bindings"/"__init__.txt"]
-
-    create_python_module("Rasterization",
+    create_python_module([orig_algo_impl_batch],
+                         "Rasterization",
                          "rasterization",
-                         source_files,
-                         py_bindings,
-                         module_proto_scripts)
+                         py_bindings_dir,
+                         [py_bindings_dir/"__init__.txt"],
+                         ["fmt"])
     """
