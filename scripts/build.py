@@ -265,111 +265,114 @@ class Batch:
         return obj_files
 
 
-def build(batches: list[Batch],
-          build_dir: Path,
-          description: str,
-          template: str,
-          library_names: list[str] | None = None) -> None:
+class Builder:
 
-    obj_files: list[Path] = [obj_file for batch in batches for obj_file in batch.compile(build_dir)]   
+    def __init__(self):
 
-    formatted_library_names: str = " ".join([f"-l{library_name:s}" for library_name in library_names])
+        self._batches: list[Batch] = []
 
-    run_shell_command("Build Executable",
-                      template.format(object_files=" ".join([str(file.relative_to(build_dir)) for file in obj_files]),
-                                      library_names=formatted_library_names),
-                      shell_path=build_dir)
+    def _compile(self,
+                 build_dir: Path,
+                 template_description: str,
+                 template: str,
+                 library_names: list[str] | None = None) -> None:
 
-    for file in obj_files:
-        file.unlink()
+        obj_files: list[Path] = [obj_file for batch in self._batches for obj_file in batch.compile(build_dir)]   
+
+        formatted_library_names: str = " ".join([f"-l{library_name:s}" for library_name in library_names])
+
+        run_shell_command(template_description,
+                          template.format(object_files=" ".join([str(file.relative_to(build_dir)) for file in obj_files]),
+                                          library_names=formatted_library_names),
+                          shell_path=build_dir)
+
+        for file in obj_files:
+            file.unlink()
+
+    def add_batch(batch: Batch) -> None:
+
+        self._batches.append(batch)
+
+    def build_executable(self,
+                         build_dir: Path,
+                         executable_name: str,
+                         library_names: list[str] | None = None) -> None:
+
+        linking_template: str = "g++ {{object_files:s}} -o {executable:s}.exe {{library_names:s}}"
+
+        self._compile(build_dir,
+                      "Build Executable",
+                      linking_template.format(executable=executable_name),
+                      library_names)
+
+    def build_dynamic_library(self,
+                              build_dir: Path,
+                              library_to_be_built: str,
+                              previous_library_names: list[str] | None = None) -> None:
+
+        linking_template: str = "g++ {{object_files:s}} -shared -o {current_library:s}.so {{library_names:s}}"
+
+        for batch in batches:
+            batch.enable_position_independence(True)
+
+        self._compile(build_dir,
+                      f"Dynamically Link into {library_to_be_built:s} Library",
+                      linking_template.format(current_library=library_to_be_built),
+                      previous_library_names)
+
+    def build_python_module(self,
+                            library_name: str,
+                            module_name: str,
+                            py_bindings_dir: Path,
+                            prototype_wrapper_scripts: list[Path],
+                            previous_libraries: list[str] | None = None) -> None:
+
+        build_dir: Path = Path("build")
+
+        pybind_batch: Batch = Batch(py_bindings_dir)
+        pybind_batch.add_include_directory(Path("/usr")/"include"/"python3.12")
+        pybind_batch.add_preprocessor_macro("LIBRARY_NAME", library_name)
+
+        self._batches.append(pybind_batch)
+
+        self.build_dynamic_library(build_dir,
+                                   library_name,
+                                   previous_libraries)
+
+        module_dir: Path = [tmp_path for tmp_path in [Path(tmp_path) for tmp_path in site.getsitepackages()] if tmp_path.name == "site-packages"][0]/module_name  # noqa: E501
+        if (module_dir.exists()):
+            shutil.rmtree(module_dir)
+
+        tmp_module_dir: Path = build_dir/library_name
+        tmp_module_dir.mkdir()
+
+        shutil.move(build_dir/f"{library_name:s}.so", tmp_module_dir)
+
+        (tmp_module_dir/"py.typed").touch()
+        for prototype_wrapper_script in prototype_wrapper_scripts:
+            with open(prototype_wrapper_script, "r") as prototype_wrapper_script_IO:
+                with open(tmp_module_dir/f"{prototype_wrapper_script.stem:s}.py", "a") as wrapper_script_IO:
+                    wrapper_script_IO.write(prototype_wrapper_script_IO.read().format(library_name=library_name))
+
+        shutil.move(tmp_module_dir, module_dir)
+        build_dir.rmdir()
 
 
-def build_executable(batches: list[Batch],
-                     build_dir: Path,
-                     executable_name: str,
-                     library_names: list[str] | None = None) -> None:
-
-    linking_template: str = "g++ {{object_files:s}} -o {executable:s}.exe {{library_names:s}}"
-
-    build(batches,
-          build_dir,
-          "Build Executable",
-          linking_template.format(executable=executable_name),
-          library_names)
-
-
-def build_dynamic_library(batches: list[Batch],
-                          build_dir: Path,
-                          library_to_be_built: str,
-                          previous_library_names: list[str] | None = None) -> None:
-
-    linking_template: str = "g++ {{object_files:s}} -shared -o {current_library:s}.so {{library_names:s}}"
-
-    for batch in batches:
-        batch.enable_position_independence(True)
-
-    build(batches,
-          build_dir,
-          f"Dynamically Link into {library_to_be_built:s} Library",
-          linking_template.format(current_library=library_to_be_built),
-          library_names)
-
-
-def build_and_test_executable(batches: list[Batch],
+def build_and_test_executable(builder: Builder,
                               executable_name: str,
                               library_names: list[str] | None = None) -> None:
 
     build_dir: Path = Path.cwd()/"build"
 
-    build_executable(batches,
-                     build_dir,
-                     executable_name,
-                     library_names)
+    builder.build_executable(build_dir,
+                             executable_name,
+                             library_names)
 
     run_shell_command("Run Executable",
                       f"./{executable_name:s}.exe",
                       build_dir)
 
     shutil.rmtree(build_dir)
-
-
-def create_python_module(batches: list[Batch],
-                         library_name: str,
-                         module_name: str,
-                         py_bindings_dir: Path,
-                         prototype_wrapper_scripts: list[Path],
-                         previous_libraries: list[str] | None = None) -> None:
-
-    build_dir: Path = Path("build")
-
-    pybind_batch: Batch = Batch(py_bindings_dir)
-    pybind_batch.add_include_directory(Path("/usr")/"include"/"python3.12")
-    pybind_batch.add_preprocessor_macro("LIBRARY_NAME", library_name)
-
-    batches.append(pybind_batch)
-
-    build_dynamic_library(batches,
-                          build_dir,
-                          library_name,
-                          previous_libraries)
-
-    module_dir: Path = [tmp_path for tmp_path in [Path(tmp_path) for tmp_path in site.getsitepackages()] if tmp_path.name == "site-packages"][0]/module_name  # noqa: E501
-    if (module_dir.exists()):
-        shutil.rmtree(module_dir)
-
-    tmp_module_dir: Path = build_dir/library_name
-    tmp_module_dir.mkdir()
-
-    shutil.move(build_dir/f"{library_name:s}.so", tmp_module_dir)
-
-    (tmp_module_dir/"py.typed").touch()
-    for prototype_wrapper_script in prototype_wrapper_scripts:
-        with open(prototype_wrapper_script, "r") as prototype_wrapper_script_IO:
-            with open(tmp_module_dir/f"{prototype_wrapper_script.stem:s}.py", "a") as wrapper_script_IO:
-                wrapper_script_IO.write(prototype_wrapper_script_IO.read().format(library_name=library_name))
-
-    shutil.move(tmp_module_dir, module_dir)
-    build_dir.rmdir()
 
 
 if (__name__ == "__main__"):
@@ -379,17 +382,19 @@ if (__name__ == "__main__"):
     orig_algo_impl_batch: Path = Batch(src_dir/"orig_algo_impl")
     orig_algo_impl_batch.add_library_name("fmt")
 
+    main_builder: Builder = Builder()
+    main_builder.add_batch(orig_algo_impl_batch)
+
     #"""
-    build_and_test_executable([orig_algo_impl_batch],
+    build_and_test_executable(main_builder,
                               "Rasterization",
                               ["fmt"])
     """
     py_bindings_dir: Path = src_dir/"python_bindings"
 
-    create_python_module([orig_algo_impl_batch],
-                         "Rasterization",
-                         "rasterization",
-                         py_bindings_dir,
-                         [py_bindings_dir/"__init__.txt"],
-                         ["fmt"])
+    main_builder.build_python_module("Rasterization",
+                                     "rasterization",
+                                     py_bindings_dir,
+                                     [py_bindings_dir/"__init__.txt"],
+                                     ["fmt"])
     """
