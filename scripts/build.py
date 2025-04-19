@@ -1,3 +1,4 @@
+import sys
 import copy
 import site
 import shutil
@@ -274,12 +275,13 @@ class Builder:
     def _compile(self,
                  build_dir: Path,
                  template_description: str,
-                 template: str,
-                 library_names: list[str] | None = None) -> None:
+                 template: str) -> None:
 
         obj_files: list[Path] = [obj_file for batch in self._batches for obj_file in batch.compile(build_dir)]   
 
-        formatted_library_names: str = " ".join([f"-l{library_name:s}" for library_name in library_names])
+        unique_library_names: set[Path] = set.union(*[batch.yield_library_names() for batch in self._batches]) 
+
+        formatted_library_names: str = " ".join([f"-l{library_name:s}" for library_name in unique_library_names])
 
         run_shell_command(template_description,
                           template.format(object_files=" ".join([str(file.relative_to(build_dir)) for file in obj_files]),
@@ -289,55 +291,49 @@ class Builder:
         for file in obj_files:
             file.unlink()
 
-    def add_batch(batch: Batch) -> None:
+    def add_batch(self, batch: Batch) -> None:
 
         self._batches.append(batch)
 
     def build_executable(self,
                          build_dir: Path,
-                         executable_name: str,
-                         library_names: list[str] | None = None) -> None:
+                         executable_name: str) -> None:
 
         linking_template: str = "g++ {{object_files:s}} -o {executable:s}.exe {{library_names:s}}"
 
         self._compile(build_dir,
                       "Build Executable",
-                      linking_template.format(executable=executable_name),
-                      library_names)
+                      linking_template.format(executable=executable_name))
 
     def build_dynamic_library(self,
                               build_dir: Path,
-                              library_to_be_built: str,
-                              previous_library_names: list[str] | None = None) -> None:
+                              library_to_be_built: str) -> None:
 
         linking_template: str = "g++ {{object_files:s}} -shared -o {current_library:s}.so {{library_names:s}}"
 
-        for batch in batches:
+        for batch in self._batches:
             batch.enable_position_independence(True)
 
         self._compile(build_dir,
                       f"Dynamically Link into {library_to_be_built:s} Library",
-                      linking_template.format(current_library=library_to_be_built),
-                      previous_library_names)
+                      linking_template.format(current_library=library_to_be_built))
 
     def build_python_module(self,
                             library_name: str,
                             module_name: str,
                             py_bindings_dir: Path,
-                            prototype_wrapper_scripts: list[Path],
-                            previous_libraries: list[str] | None = None) -> None:
+                            prototype_wrapper_scripts: list[Path]) -> None:
 
         build_dir: Path = Path("build")
 
         pybind_batch: Batch = Batch(py_bindings_dir)
-        pybind_batch.add_include_directory(Path("/usr")/"include"/"python3.12")
+        pybind_batch.add_include_directory(Path("/usr")/"include"/f"python{sys.version_info.major:d}.{sys.version_info.minor:d}")
         pybind_batch.add_preprocessor_macro("LIBRARY_NAME", library_name)
 
         self._batches.append(pybind_batch)
 
         self.build_dynamic_library(build_dir,
-                                   library_name,
-                                   previous_libraries)
+                                   library_name)
 
         module_dir: Path = [tmp_path for tmp_path in [Path(tmp_path) for tmp_path in site.getsitepackages()] if tmp_path.name == "site-packages"][0]/module_name  # noqa: E501
         if (module_dir.exists()):
@@ -365,8 +361,7 @@ def build_and_test_executable(builder: Builder,
     build_dir: Path = Path.cwd()/"build"
 
     builder.build_executable(build_dir,
-                             executable_name,
-                             library_names)
+                             executable_name)
 
     run_shell_command("Run Executable",
                       f"./{executable_name:s}.exe",
@@ -387,14 +382,12 @@ if (__name__ == "__main__"):
 
     #"""
     build_and_test_executable(main_builder,
-                              "Rasterization",
-                              ["fmt"])
+                              "Rasterization")
     """
     py_bindings_dir: Path = src_dir/"python_bindings"
 
     main_builder.build_python_module("Rasterization",
                                      "rasterization",
                                      py_bindings_dir,
-                                     [py_bindings_dir/"__init__.txt"],
-                                     ["fmt"])
+                                     [py_bindings_dir/"__init__.txt"])
     """
