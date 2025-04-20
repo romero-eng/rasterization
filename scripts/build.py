@@ -305,24 +305,14 @@ class Builder:
                       "Build Executable",
                       linking_template.format(executable=executable_name))
 
-    def build_dynamic_library(self,
-                              build_dir: Path,
-                              library_to_be_built: str) -> None:
-
-        linking_template: str = "g++ {{object_files:s}} -shared -o {current_library:s}.so {{library_names:s}}"
-
-        for batch in self._batches:
-            batch.enable_position_independence(True)
-
-        self._compile(build_dir,
-                      f"Dynamically Link into {library_to_be_built:s} Library",
-                      linking_template.format(current_library=library_to_be_built))
 
     def build_python_module(self,
                             library_name: str,
                             module_name: str,
                             py_bindings_dir: Path,
                             prototype_wrapper_scripts: list[Path]) -> None:
+
+        linking_template: str = "g++ {{object_files:s}} -shared -o {current_library:s}.so {{library_names:s}}"
 
         build_dir: Path = Path("build")
 
@@ -332,12 +322,12 @@ class Builder:
 
         self._batches.append(pybind_batch)
 
-        self.build_dynamic_library(build_dir,
-                                   library_name)
+        for batch in self._batches:
+            batch.enable_position_independence(True)
 
-        module_dir: Path = [tmp_path for tmp_path in [Path(tmp_path) for tmp_path in site.getsitepackages()] if tmp_path.name == "site-packages"][0]/module_name  # noqa: E501
-        if (module_dir.exists()):
-            shutil.rmtree(module_dir)
+        self._compile(build_dir,
+                      f"Dynamically Link into {library_name:s} Library",
+                      linking_template.format(current_library=library_name))
 
         tmp_module_dir: Path = build_dir/library_name
         tmp_module_dir.mkdir()
@@ -350,6 +340,9 @@ class Builder:
                 with open(tmp_module_dir/f"{prototype_wrapper_script.stem:s}.py", "a") as wrapper_script_IO:
                     wrapper_script_IO.write(prototype_wrapper_script_IO.read().format(library_name=library_name))
 
+        module_dir: Path = [tmp_path for tmp_path in [Path(tmp_path) for tmp_path in site.getsitepackages()] if tmp_path.name == "site-packages"][0]/module_name  # noqa: E501
+        if (module_dir.exists()):
+            shutil.rmtree(module_dir)
         shutil.move(tmp_module_dir, module_dir)
         build_dir.rmdir()
 
@@ -380,7 +373,7 @@ if (__name__ == "__main__"):
     main_builder: Builder = Builder()
     main_builder.add_batch(orig_algo_impl_batch)
 
-    #"""
+    """
     build_and_test_executable(main_builder,
                               "Rasterization")
     """
@@ -390,4 +383,4 @@ if (__name__ == "__main__"):
                                      "rasterization",
                                      py_bindings_dir,
                                      [py_bindings_dir/"__init__.txt"])
-    """
+    #"""
