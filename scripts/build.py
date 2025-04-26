@@ -375,9 +375,7 @@ if (__name__ == "__main__"):
     orig_algo_impl_batch: Path = Batch(src_dir/"orig_algo_impl")
     orig_algo_impl_batch.add_library_name("fmt")
 
-    main_builder: Builder = \
-        Builder(Path.cwd()/"build",
-                "Rasterization")
+    main_builder: Builder = Builder(Path.cwd()/"build", "Rasterization")
     main_builder.add_batch(orig_algo_impl_batch)
 
     main_builder.test_executable()
