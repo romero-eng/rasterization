@@ -12,9 +12,7 @@
 # include "../orig_algo_impl/Rasterization.hpp"
 
 
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wunused-parameter"
-static PyObject* Line(PyObject* self, PyObject* args) // Have to suppress a warning here due to the insufficiencies of the Python/C API
+static PyObject* Line(PyObject* self, PyObject* args)
 {
     int x_1;
     int y_1;
@@ -38,7 +36,6 @@ static PyObject* Line(PyObject* self, PyObject* args) // Have to suppress a warn
 
     return py_list;
 }
-#pragma GCC diagnostic pop
 
 
 static PyMethodDef rasterizationMethods[] = {
