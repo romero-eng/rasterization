@@ -3,6 +3,7 @@ import sys
 import copy
 import site
 import shutil
+import argparse
 import subprocess
 from pathlib import Path
 from enum import StrEnum, IntEnum
@@ -65,6 +66,7 @@ class Batch:
         self._include_dirs: set[Path] = set() 
         self._preprocessor_macros: dict[str, str | None] = {}
         self._library_names: set[Path] = set()
+        self._warnings_to_suppress: list[str] = []
 
         self.set_version_year(2023)
         self.enable_low_level_assembly_debugging(False)
@@ -188,6 +190,10 @@ class Batch:
 
         self._warn_about_implicit_integer_sign_change_conversions = decision
 
+    def suppress_specific_warning(self, warning: str) -> None: 
+
+        self._warnings_to_suppress.append(warning)
+
     def disable_compiler_extensions(self, decision: bool) -> None:
 
         self._disable_compiler_extensions = decision
@@ -234,6 +240,10 @@ class Batch:
         if self._warn_about_implicit_integer_sign_change_conversions:
             warnings.append("sign-conversion")
 
+        if self._warnings_to_suppress:
+            for warning in self._warnings_to_suppress:
+                warnings.append(f"no-{warning:s}")
+
         flags: list[str] = \
             [f"{flag:s}={value:s}" if value is not None else f"{flag:s}" for flag, value in main_decisions.items()] + \
             [f"D{macro:s}=\\\"{value:s}\\\"" if value is not None else f"D{macro:s}" for macro, value in preprocessor_macros.items()] + \
@@ -274,6 +284,11 @@ class Builder:
 
         EXECUTABLE = "g++ {{object_files:s}} -o {executable:s}.exe {{library_names:s}}"
         PYTHON = "g++ {{object_files:s}} -shared -o {dynamic_library:s}.so {{library_names:s}}"
+
+    class _End_Product(StrEnum):
+
+        EXECUTABLE = "exe"
+        PYTHON = "py"
 
     def __init__(self,
                  build_dir: Path,
@@ -316,6 +331,7 @@ class Builder:
         pybind_batch: Batch = Batch(py_bindings_dir)
         pybind_batch.add_include_directory(Path("/usr")/"include"/f"python{sys.version_info.major:d}.{sys.version_info.minor:d}")
         pybind_batch.add_preprocessor_macro("LIBRARY_NAME", self._end_product_name)
+        pybind_batch.suppress_specific_warning("unused-parameter")
 
         self._batches.append(pybind_batch)
 
@@ -367,6 +383,22 @@ class Builder:
 
         shutil.move(self._build_dir, module_dir)
 
+    def cmd(self,
+            py_bindings_dir: Path | None) -> None:
+
+        cmd_parser: argparse.ArgumentParser = argparse.ArgumentParser()
+        cmd_parser.add_argument("end_product", choices=[end_product.value for end_product in self._End_Product])
+        end_product: self._End_Product = self._End_Product(cmd_parser.parse_args().end_product)
+
+        match end_product:
+            case self._End_Product.EXECUTABLE:
+                main_builder.test_executable()
+            case self._End_Product.PYTHON:
+                if py_bindings_dir is not None:
+                    main_builder.install_python_module(py_bindings_dir)
+                else:
+                    raise ValueError("Need a directory with Python Bindings in order to build a Python Module")
+
 
 if (__name__ == "__main__"):
 
@@ -377,6 +409,5 @@ if (__name__ == "__main__"):
 
     main_builder: Builder = Builder(Path.cwd()/"build", "Rasterization")
     main_builder.add_batch(orig_algo_impl_batch)
-
-    main_builder.test_executable()
-    #main_builder.install_python_module(src_dir/"python_bindings") 
+    main_builder.cmd(src_dir/"python_bindings")
+ 
