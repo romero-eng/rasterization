@@ -2,10 +2,14 @@
 
 # ifdef LIBRARY_NAME
 
-# define STRINGIFY(s) #s
+# ifdef PY_VERSION
+
+# define IDENTITY(x) x
+# define XSTR(s) #s
+# define STR(s) XSTR(s)
 
 # define PY_SSIZE_CLEAN
-# include <Python.h>
+# include STR(python IDENTITY(PY_VERSION)/Python.h)
 
 # include <array>
 # include <vector>
@@ -51,7 +55,7 @@ static PyMethodDef rasterizationMethods[] = {
 PyDoc_STRVAR(rasterization_module_doc, "Python bindings for the C++ Rasterization Library");
 static struct PyModuleDef rasterizationmodule = {
     PyModuleDef_HEAD_INIT,
-    STRINGIFY(LIBRARY_NAME),
+    STR(LIBRARY_NAME),
     rasterization_module_doc,
     -1,
     rasterizationMethods,
@@ -62,6 +66,10 @@ static struct PyModuleDef rasterizationmodule = {
 
 
 PyMODINIT_FUNC PyInit_Rasterization() { return PyModule_Create(&rasterizationmodule); }
+
+# else
+# error "Must define the Python Version for the module to be created"
+# endif
 
 # else
 # error "Must define the name of the Python module to be created"

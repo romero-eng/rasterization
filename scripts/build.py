@@ -329,8 +329,8 @@ class Builder:
                              py_bindings_dir: Path) -> None:
 
         pybind_batch: Batch = Batch(py_bindings_dir)
-        pybind_batch.add_include_directory(Path("/usr")/"include"/f"python{sys.version_info.major:d}.{sys.version_info.minor:d}")
         pybind_batch.add_preprocessor_macro("LIBRARY_NAME", self._end_product_name)
+        pybind_batch.add_preprocessor_macro("PY_VERSION", f"{sys.version_info.major:d}.{sys.version_info.minor:d}")
         pybind_batch.suppress_specific_warning("unused-parameter")
 
         self._batches.append(pybind_batch)
