@@ -246,7 +246,7 @@ class Batch:
 
         flags: list[str] = \
             [f"{flag:s}={value:s}" if value is not None else f"{flag:s}" for flag, value in main_decisions.items()] + \
-            [f"D{macro:s}=\\\"{value:s}\\\"" if value is not None else f"D{macro:s}" for macro, value in preprocessor_macros.items()] + \
+            [f"D{macro:s}={value:s}" if value is not None else f"D{macro:s}" for macro, value in preprocessor_macros.items()] + \
             [f"I {str(include_dir):s}" for include_dir in self._include_dirs] + \
             [f"W{flag:s}" for flag in warnings]
 

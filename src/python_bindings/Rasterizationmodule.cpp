@@ -2,6 +2,8 @@
 
 # ifdef LIBRARY_NAME
 
+# define STRINGIFY(s) #s
+
 # define PY_SSIZE_CLEAN
 # include <Python.h>
 
@@ -49,7 +51,7 @@ static PyMethodDef rasterizationMethods[] = {
 PyDoc_STRVAR(rasterization_module_doc, "Python bindings for the C++ Rasterization Library");
 static struct PyModuleDef rasterizationmodule = {
     PyModuleDef_HEAD_INIT,
-    LIBRARY_NAME,
+    STRINGIFY(LIBRARY_NAME),
     rasterization_module_doc,
     -1,
     rasterizationMethods,
