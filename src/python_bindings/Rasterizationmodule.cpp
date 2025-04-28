@@ -44,9 +44,38 @@ static PyObject* Line(PyObject* self, PyObject* args)
 }
 
 
+static PyObject* Circle(PyObject* self, PyObject* args)
+{
+    int radius;
+    int x_c;
+    int y_c;
+
+    if(!PyArg_ParseTuple(args, "iii", &radius, &x_c, &y_c)) { return NULL; }
+
+    std::vector<std::array<int, 2>> points {Rasterization::Circle(radius, {x_c, y_c})};
+
+    PyObject* tmp_py_tuple;
+    PyObject* py_list {PyList_New(static_cast<Py_ssize_t>(points.size()))};
+
+    for(std::size_t n {0}; n < points.size(); n++) {
+        const auto& [x, y] = points[n];
+        tmp_py_tuple = PyTuple_New(2);
+        PyTuple_SetItem(tmp_py_tuple, 0, PyLong_FromLong(x));
+        PyTuple_SetItem(tmp_py_tuple, 1, PyLong_FromLong(y));
+        PyList_SetItem(py_list, static_cast<Py_ssize_t>(n), tmp_py_tuple);
+    }
+
+    return py_list;
+}
+
+
 static PyMethodDef rasterizationMethods[] = {
     {"Line",
      Line,
+     METH_VARARGS,
+     NULL},
+    {"Circle",
+     Circle,
      METH_VARARGS,
      NULL},
     {NULL, NULL, 0, NULL}};

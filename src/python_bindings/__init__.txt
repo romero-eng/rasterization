@@ -3,3 +3,6 @@ from . import {library_name:s}
 def Line(x_1: int, y_1: int, x_2: int, y_2: int) -> list[tuple[int, int]]:
     return {library_name:s}.Line(x_1, y_1, x_2, y_2)
 
+def Circle(radius: int, x_c: int, y_c: int) -> list[tuple[int, int]]:
+    return {library_name:s}.Circle(radius, x_c, y_c)
+
