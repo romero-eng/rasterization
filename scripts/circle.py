@@ -45,7 +45,7 @@ def py_impl_circle(radius: int,
     # Left-most point
     points[2*Q] = \
         (-first_octant_points[0][0] + center[0],
-          first_octant_points[0][1] + center[1])
+          first_octant_points[0][1] + center[1])  # noqa: E127
 
     # Bottom-most point
     points[3*Q] = \
@@ -62,7 +62,7 @@ def py_impl_circle(radius: int,
         # Upper-right diagonal point
         points[2*Q - (N - 1)] = \
             (-first_octant_points[N - 1][0] + center[0],
-              first_octant_points[N - 1][1] + center[1])
+              first_octant_points[N - 1][1] + center[1])  # noqa: E127
 
         # Lower-right diagonal point
         points[2*Q + (N - 1)] = \
@@ -71,9 +71,8 @@ def py_impl_circle(radius: int,
 
         # Lower-left diagonal point
         points[4*Q - (N - 1)] = \
-            ( first_octant_points[N - 1][0] + center[0],
-             -first_octant_points[N - 1][1] + center[1])
-
+            ( first_octant_points[N - 1][0] + center[0],  # noqa: E201
+             -first_octant_points[N - 1][1] + center[1])  # noqa: E128
 
     for m in range(1, M):
 
@@ -90,12 +89,12 @@ def py_impl_circle(radius: int,
         # Third Octant
         points[Q + m] = \
             (-first_octant_points[m][1] + center[0],
-              first_octant_points[m][0] + center[1])
+              first_octant_points[m][0] + center[1])  # noqa: E127
 
         # Fourth Octant
         points[2*Q - m] = \
             (-first_octant_points[m][0] + center[0],
-              first_octant_points[m][1] + center[1])
+              first_octant_points[m][1] + center[1])  # noqa: E127
 
         # Fifth Octant
         points[2*Q + m] = \
@@ -109,13 +108,13 @@ def py_impl_circle(radius: int,
 
         # Seventh Octant
         points[3*Q + m] = \
-            ( first_octant_points[m][1] + center[0],
-             -first_octant_points[m][0] + center[1])
+            ( first_octant_points[m][1] + center[0],  # noqa: E201
+             -first_octant_points[m][0] + center[1])  # noqa: E128
 
         # Eighth Octant
         points[4*Q - m] = \
-            ( first_octant_points[m][0] + center[0],
-             -first_octant_points[m][1] + center[1])
+            ( first_octant_points[m][0] + center[0],  # noqa: E201
+             -first_octant_points[m][1] + center[1])  # noqa: E128
 
     return points
 
@@ -138,8 +137,8 @@ def plot_circle_rasterization(radius: int,
     ax.plot(x,    top_half)
     ax.plot(x, bottom_half)
 
-    points: np.ndarray[tuple[int, int], np.dtype[Any]] = np.array(rasterization.Circle(radius, center[0], center[1])) # py_impl_circle(radius, center)
- 
+    points: np.ndarray[tuple[int, ...], np.dtype[Any]] = np.array(rasterization.Circle(radius, center[0], center[1]))  # py_impl_circle(radius, center)
+
     for i in range(0, len(points)):
         print("({X: 2d}, {Y: 2d}), {angle:.2f}".format(X=points[i][0],
                                                        Y=points[i][1],
